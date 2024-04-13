@@ -1,3 +1,7 @@
+# OS, IDE temp files
+.DS_Store
+.idea
+
 # Prerequisites
 *.d
 
