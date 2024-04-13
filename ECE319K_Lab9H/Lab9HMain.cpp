@@ -1,8 +1,10 @@
 // Lab9HMain.cpp
 // Runs on MSPM0G3507
 // Lab 9 ECE319H
-// Your name
-// Last Modified: 1/1/2024
+// Jonathan Simon, Hyunho Jeong
+// Professor: Chiou
+// EIDS: HJ8379, JES7539
+// Last Modified: 04/13/2024
 
 #include <stdio.h>
 #include <stdint.h>
