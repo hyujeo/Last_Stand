@@ -21,6 +21,7 @@
 #include "Switch.h"
 #include "Sound.h"
 #include "images/images.h"
+#include "Sprite.h"
 extern "C" void __disable_irq(void);
 extern "C" void __enable_irq(void);
 extern "C" void TIMG12_IRQHandler(void);
@@ -43,6 +44,8 @@ uint32_t Random(uint32_t n){
 }
 
 SlidePot Sensor(1500,0); // copy calibration from Lab 7
+
+Sprite Sprites[100]; // Sprite 0 is player ship
 
 // games  engine runs at 30Hz
 void TIMG12_IRQHandler(void){uint32_t pos,msg;
