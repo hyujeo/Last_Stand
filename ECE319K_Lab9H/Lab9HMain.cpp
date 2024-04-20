@@ -21,7 +21,7 @@
 #include "Switch.h"
 #include "Sound.h"
 #include "images/images.h"
-#include "Sprite.h"
+//#include "Sprite.h"
 extern "C" void __disable_irq(void);
 extern "C" void __enable_irq(void);
 extern "C" void TIMG12_IRQHandler(void);
@@ -45,7 +45,7 @@ uint32_t Random(uint32_t n){
 
 SlidePot Sensor(1500,0); // copy calibration from Lab 7
 
-Sprite Sprites[100]; // Sprite 0 is player ship
+//Sprite Sprites[100]; // Sprite 0 is player ship
 
 // games  engine runs at 30Hz
 void TIMG12_IRQHandler(void){uint32_t pos,msg;
@@ -87,7 +87,7 @@ const char *Phrases[3][4]={
   {Language_English,Language_Spanish,Language_Portuguese,Language_French}
 };
 // use main1 to observe special characters
-int main(void){ // main1
+int main1(void){ // main1
     char l;
   __disable_irq();
   PLL_Init(); // set bus speed
@@ -159,15 +159,25 @@ int main2(void){ // main2
 }
 
 // use main3 to test switches and LEDs
-int main3(void){ // main3
+int main(void){ // main3
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
   Switch_Init(); // initialize switches
   LED_Init(); // initialize LED
+  uint32_t INPUTTTT;
   while(1){
     // write code to test switches and LEDs
-   
+      INPUTTTT = Switch_In();
+   if(INPUTTTT != 0){
+       RED_LED_On();
+       YELLOW_LED_On();
+       GREEN_LED_On();
+   }else{
+       RED_LED_Off();
+       YELLOW_LED_Off();
+       GREEN_LED_Off();
+   }
   }
 }
 // use main4 to test sound outputs
