@@ -159,29 +159,34 @@ int main2(void){ // main2
 }
 
 // use main3 to test switches and LEDs
-int main(void){ // main3
+int main3(void){ // main3
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
   Switch_Init(); // initialize switches
   LED_Init(); // initialize LED
   uint32_t INPUTTTT;
+  uint8_t is_on = 0;
   while(1){
     // write code to test switches and LEDs
       INPUTTTT = Switch_In();
-   if(INPUTTTT != 0){
+   if(INPUTTTT != 0 && is_on == 0){
+       is_on = 1;
        RED_LED_On();
        YELLOW_LED_On();
        GREEN_LED_On();
-   }else{
+   }else if(INPUTTTT == 0 && is_on == 1){
+       is_on = 0;
        RED_LED_Off();
        YELLOW_LED_Off();
        GREEN_LED_Off();
    }
   }
 }
+
 // use main4 to test sound outputs
-int main4(void){ uint32_t last=0,now;
+int main(void){
+  uint32_t last=0,now;
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
@@ -192,19 +197,32 @@ int main4(void){ uint32_t last=0,now;
   __enable_irq();
   while(1){
     now = Switch_In(); // one of your buttons
-    if((last == 0)&&(now == 1)){
+    if((last == 0)&&((now&0x01) == 1)){
+        last = 1;
       Sound_Shoot(); // call one of your sounds
     }
-    if((last == 0)&&(now == 2)){
+    if((last == 0)&&((now&0x02) == 2)){
+        last = 2;
       Sound_Killed(); // call one of your sounds
     }
-    if((last == 0)&&(now == 4)){
+    if((last == 0)&&((now&0x04) == 4)){
+        last = 4;
       Sound_Explosion(); // call one of your sounds
     }
-    if((last == 0)&&(now == 8)){
+    if((last == 0)&&((now&0x08) == 8)){
+        last = 8;
       Sound_Fastinvader1(); // call one of your sounds
     }
+    if((last == 0)&&((now&0x10) == 16)){
+        last = 16;
+        Sound_Fastinvader2();
+    }
     // modify this to test all your sounds
+    if((last != 0) && (now == 0)){
+        //Sound_Stop();
+        last = 0;
+    }
+    Clock_Delay(10000); // very bad way to avoid button debounce...just for testing :)
   }
 }
 // ALL ST7735 OUTPUT MUST OCCUR IN MAIN
