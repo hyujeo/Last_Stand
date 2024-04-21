@@ -33,7 +33,7 @@ void Switch_Init(void){
 // return current state of left switch
 uint32_t JOYSTICK_Switch_In(void){
     // write this
-    return (GPIOA->DIN31_0)&(1<<JOYSTICK_INDEX);
+    return ((GPIOA->DIN31_0)&(1<<JOYSTICK_INDEX))>>(JOYSTICK_INDEX);
 }
 
 // return current state of left switch
