@@ -16,6 +16,7 @@
 #include "../inc/Timer.h"
 #include "../inc/SlidePot.h"
 #include "../inc/DAC5.h"
+#include "../inc/JoyStick.h"
 #include "SmallFont.h"
 #include "LED.h"
 #include "Switch.h"
@@ -159,6 +160,7 @@ int main2(void){ // main2
 }
 
 // use main3 to test switches and LEDs
+// pressing any of the 5 buttons (4 regular buttons and 1 joystick button) turns on all 3 LEDs
 int main3(void){ // main3
   __disable_irq();
   PLL_Init(); // set bus speed
@@ -185,7 +187,8 @@ int main3(void){ // main3
 }
 
 // use main4 to test sound outputs
-int main(void){
+// 5 buttons (4 regular buttons and 1 joystick button) that output a sound to DAC
+int main4(void){
   uint32_t last=0,now;
   __disable_irq();
   PLL_Init(); // set bus speed
@@ -226,7 +229,7 @@ int main(void){
   }
 }
 // ALL ST7735 OUTPUT MUST OCCUR IN MAIN
-int main5(void){ // final main
+int main(void){ // final main
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
@@ -238,16 +241,25 @@ int main5(void){ // final main
   Switch_Init(); // initialize switches
   LED_Init();    // initialize LED
   Sound_Init();  // initialize sound
+  JoyStick_Init(); // initialize joy stick
   TExaS_Init(0,0,&TExaS_LaunchPadLogicPB27PB26); // PB27 and PB26
     // initialize interrupts on TimerG12 at 30 Hz
   TimerG12_IntArm(80000000/30,2);
   // initialize all data structures
   __enable_irq();
 
+  uint32_t x = 0;
+  uint32_t y = 0;
+
   while(1){
     // wait for semaphore
        // clear semaphore
        // update ST7735R
     // check for end game or level switch
+      ST7735_SetCursor(0,0);
+      JoyStick_In(&x, &y);
+      printf("x: %d\n", x);
+      printf("y: %d\n", y);
+
   }
 }
