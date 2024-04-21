@@ -29,7 +29,7 @@
 // Initialize MKII JoyStick and JoyStick button
 void JoyStick_Init(void){
   ADC_Init(ADC0,1,ADCVREF_VDDA); // x position joystick
-  ADC_Init(ADC1,3,ADCVREF_VDDA); // y position joystick
+  //ADC_Init(ADC1,3,ADCVREF_VDDA); // y position joystick
   // assume these are called from LaunchPad_Init
 //  GPIOA->GPRCM.RSTCTL = (uint32_t)0xB1000003;  // Reset GPIOA
 //  GPIOA->GPRCM.PWREN = (uint32_t)0x26000001;   // Enable power to GPIOA
@@ -61,7 +61,8 @@ uint32_t JoyStick_InButton(void){
 // Output: none
 void JoyStick_In(uint32_t *x, uint32_t *y){
   *x = ADC_In(ADC0);
-  *y = ADC_In(ADC1);
+  ADC_Init(ADC1,0,ADCVREF_VDDA); // y position joystick
+  *y = ADC_In(ADC0);
 }
 //#define BUTT1 (1<<12)
 // Read Button1 button, PA12
