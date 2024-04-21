@@ -23,12 +23,12 @@
 // J4.33 user Button1 (bottom) (digital) PA12
 // J4.32 user Button2 (top) (digital)    PA11 (conflicts with UART0 Rx from XDS Tx)
 
-#define PA26INDEX 58
-#define PA11INDEX 21
-#define PA12INDEX 33
+#define PA24INDEX 53
+//#define PA11INDEX 21
+//#define PA12INDEX 33
 // Initialize MKII JoyStick and JoyStick button
 void JoyStick_Init(void){
-  ADC_Init(ADC0,2,ADCVREF_VDDA); // x position joystick
+  ADC_Init(ADC0,1,ADCVREF_VDDA); // x position joystick
   ADC_Init(ADC1,3,ADCVREF_VDDA); // y position joystick
   // assume these are called from LaunchPad_Init
 //  GPIOA->GPRCM.RSTCTL = (uint32_t)0xB1000003;  // Reset GPIOA
@@ -43,11 +43,11 @@ void JoyStick_Init(void){
     //   bit 16 is pull down control
     //   bit 7 is PC peripheral connected, enable transparent data flow
     //   bit 0 selects GPIO function
-  IOMUX->SECCFG.PINCM[PA26INDEX]  = (uint32_t) 0x00040081;
-  IOMUX->SECCFG.PINCM[PA11INDEX]  = (uint32_t) 0x00040081;
-  IOMUX->SECCFG.PINCM[PA12INDEX]  = (uint32_t) 0x00040081;
+  IOMUX->SECCFG.PINCM[PA24INDEX]  = (uint32_t) 0x00040081;
+  //IOMUX->SECCFG.PINCM[PA11INDEX]  = (uint32_t) 0x00040081;
+  //IOMUX->SECCFG.PINCM[PA12INDEX]  = (uint32_t) 0x00040081;
 }
-#define JOYBUTTON (1<<26)
+#define JOYBUTTON (1<<24)
 // Read JoyStick button
 // Input: none
 // Output: 0 if pressed, nonzero if not pressed
@@ -63,13 +63,13 @@ void JoyStick_In(uint32_t *x, uint32_t *y){
   *x = ADC_In(ADC0);
   *y = ADC_In(ADC1);
 }
-#define BUTT1 (1<<12)
+//#define BUTT1 (1<<12)
 // Read Button1 button, PA12
 // Input: none
 // Output: 0 if pressed, nonzero if not pressed
-uint32_t JoyStick_InButton1(void){
-  return GPIOA->DIN31_0 & BUTT1;
-}
+// uint32_t JoyStick_InButton1(void){
+//   return GPIOA->DIN31_0 & BUTT1;
+// }
 //#define BUTT2 (1<<11)
 // Read Button2 button, PA11
 // Input: none
