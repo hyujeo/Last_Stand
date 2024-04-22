@@ -28,12 +28,12 @@
 //#define PA12INDEX 33
 // Initialize MKII JoyStick and JoyStick button
 void JoyStick_Init(void){
-    ADC_InitDual(ADC0, 1, 0, ADCVREF_VDDA); // dual channel x and y
-    //ADC0_Init(0,ADCVREF_VDDA); // x position joystick
+  ADC_InitDual(ADC0, 1, 0, ADCVREF_VDDA); // dual channel x and y
+  //ADC0_Init(0,ADCVREF_VDDA); // x position joystick
   //ADC_Init(ADC1,3,ADCVREF_VDDA); // y position joystick
   // assume these are called from LaunchPad_Init
-//  GPIOA->GPRCM.RSTCTL = (uint32_t)0xB1000003;  // Reset GPIOA
-//  GPIOA->GPRCM.PWREN = (uint32_t)0x26000001;   // Enable power to GPIOA
+  //  GPIOA->GPRCM.RSTCTL = (uint32_t)0xB1000003;  // Reset GPIOA
+  //  GPIOA->GPRCM.PWREN = (uint32_t)0x26000001;   // Enable power to GPIOA
   Clock_Delay(24); // time for gpio to power up
 
     // PINCM

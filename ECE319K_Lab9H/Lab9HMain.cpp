@@ -44,9 +44,16 @@ uint32_t Random(uint32_t n){
   return (Random32()>>16)%n;
 }
 
-SlidePot Sensor(1500,0); // copy calibration from Lab 7
+SlidePot Sensor(1995,-1); // copy calibration from Lab 7
 
 //Sprite Sprites[100]; // Sprite 0 is player ship
+
+uint32_t ADC0_xpos;
+uint32_t ADC0_ypos;
+int32_t slidepot_distance;
+uint32_t button_inputs;
+uint8_t refresh;
+uint8_t last;
 
 // games  engine runs at 30Hz
 void TIMG12_IRQHandler(void){uint32_t pos,msg;
@@ -55,10 +62,43 @@ void TIMG12_IRQHandler(void){uint32_t pos,msg;
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
 // game engine goes here
     // 1) sample slide pot
+    slidepot_distance = Sensor.In();
+    slidepot_distance = Sensor.Convert(slidepot_distance); // reads slidepot
+    if(slidepot_distance < 0){
+        slidepot_distance = 0;
+    }else if (slidepot_distance > 2000){
+        slidepot_distance = 2000;
+    }
     // 2) read input switches
+    JoyStick_In(&ADC0_xpos, &ADC0_ypos);
+    button_inputs = Switch_In();
     // 3) move sprites
     // 4) start sounds
+    // determine which sound to play based on certain scenarious
+    if((last == 0)&&((button_inputs&0x01) == 1)){
+        last = 1;
+        Sound_Shoot(); // if shoot button was pressed
+    }
+    // only button that makes sound effect is shoot sound
+    // rest of these sounds will be respectively called when needed
+    // these conditionals are just for bare testing :)
+    if((button_inputs&0x02) == 2){
+        Sound_Killed(); // if an invader died *change conditional*
+    }
+    if((button_inputs&0x04) == 4){
+        Sound_Explosion(); // if something blew up *change conditional*
+    }
+    if((button_inputs&0x08) == 8){
+        Sound_Fastinvader1(); // just an extra sfx *change conditional*
+    }
+    if((button_inputs&0x10) == 16){
+        Sound_Fastinvader2(); // another extra sfx *change conditional*
+    }
+    if((last!=0)&&(button_inputs==0)){ // high to low
+        last = 0;
+    }
     // 5) set semaphore
+    refresh = 1;
     // NO LCD OUTPUT IN INTERRUPT SERVICE ROUTINES
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
   }
@@ -199,6 +239,7 @@ int main4(void){
   TExaS_Init(ADC0,6,0); // ADC1 channel 6 is PB20, TExaS scope
   __enable_irq();
   while(1){
+      // pretend TimerG0 where button values will be updated
     now = Switch_In(); // one of your buttons
     if((last == 0)&&((now&0x01) == 1)){
         last = 1;
@@ -246,20 +287,26 @@ int main(void){ // final main
     // initialize interrupts on TimerG12 at 30 Hz
   TimerG12_IntArm(80000000/30,2);
   // initialize all data structures
+  button_inputs = 0;
+  slidepot_distance = 0;
+  ADC0_xpos = 0;
+  ADC0_ypos = 0;
+  refresh = 0;
+  last = 0;
   __enable_irq();
-
-  uint32_t x = 0;
-  uint32_t y = 0;
 
   while(1){
     // wait for semaphore
        // clear semaphore
        // update ST7735R
     // check for end game or level switch
-      ST7735_SetCursor(0,0);
-      JoyStick_In(&x, &y);
-      printf("x: %d\n", x);
-      printf("y: %d\n", y);
-
+      if(refresh != 0){
+          ST7735_SetCursor(0,0);
+          //ST7735_FillScreen(ST7735_BLACK);
+          //printf("x: %d\n", ADC0_xpos);
+          //printf("y: %d\n", ADC0_ypos);
+          printf("Distance: %d.%03dcm\n", (slidepot_distance/1000)%10,slidepot_distance%1000);
+          refresh = 0;
+      }
   }
 }

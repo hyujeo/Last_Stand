@@ -30,6 +30,8 @@ void Switch_Init(void){
     IOMUX->SECCFG.PINCM[JOYSTICK_BTN] = 0x00050081; // input with pull down resistor
 }
 
+
+
 // return current state of left switch
 uint32_t JOYSTICK_Switch_In(void){
     // write this
