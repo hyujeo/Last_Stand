@@ -58,13 +58,6 @@ BackgroundList blackRectangles; // sprites that got removed. for printing black 
 int score = 0;
 int shield = 0;
 
-void Game_Init() {
-  player.push(PLAYER_X >> 8, PLAYER_Y >> 8, 0, 0, 0); // initialize player
-  backgrounds.init(NUM_BACKGROUND);
-  blackRectangles.init(NUM_OBJECTS);
-  player.draw();
-}
-
 // games  engine runs at 30Hz
 void TIMG12_IRQHandler(void){
   if((TIMG12->CPU_INT.IIDX) == 1){ // this will acknowledge
@@ -106,87 +99,11 @@ const char *Phrases[3][4]={
   {Language_English,Language_Spanish,Language_Portuguese,Language_French}
 };
 
-// use main1 to observe special characters
-int main1(void){ // main1
-    char l;
-  __disable_irq();
-  PLL_Init(); // set bus speed
-  LaunchPad_Init();
-  ST7735_InitPrintf();
-  ST7735_FillScreen(0x0000);            // set screen to black
-  for(int myPhrase=0; myPhrase<= 2; myPhrase++){
-    for(int myL=0; myL<= 3; myL++){
-         ST7735_OutString((char *)Phrases[LANGUAGE][myL]);
-      ST7735_OutChar(' ');
-         ST7735_OutString((char *)Phrases[myPhrase][myL]);
-      ST7735_OutChar(13);
-    }
-  }
-  Clock_Delay1ms(3000);
-  ST7735_FillScreen(0x0000);       // set screen to black
-  l = 128;
-  while(1){
-    Clock_Delay1ms(2000);
-    for(int j=0; j < 3; j++){
-      for(int i=0;i<16;i++){
-        ST7735_SetCursor(7*j+0,i);
-        ST7735_OutUDec(l);
-        ST7735_OutChar(' ');
-        ST7735_OutChar(' ');
-        ST7735_SetCursor(7*j+4,i);
-        ST7735_OutChar(l);
-        l++;
-      }
-    }
-  }
-}
-/*
- * ST7735_SetCursor(1, 1);
-  ST7735_OutString((char *)"GAME OVER");
-  ST7735_SetCursor(1, 2);
-  ST7735_OutString((char *)"Nice try,");
-  ST7735_SetCursor(1, 3);
-  ST7735_OutString((char *)"Earthling!");
- */
-
-// use main3 to test switches and LEDs
-int main3(void){ // main3
-  __disable_irq();
-  PLL_Init(); // set bus speed
-  LaunchPad_Init();
-  Switch_Init(); // initialize switches
-  LED_Init(); // initialize LED
-  while(1){
-    // write code to test switches and LEDs
-   
-  }
-}
-// use main4 to test sound outputs
-int main4(void){ uint32_t last=0,now;
-  __disable_irq();
-  PLL_Init(); // set bus speed
-  LaunchPad_Init();
-  Switch_Init(); // initialize switches
-  LED_Init(); // initialize LED
-  Sound_Init();  // initialize sound
-  TExaS_Init(ADC0,6,0); // ADC1 channel 6 is PB20, TExaS scope
-  __enable_irq();
-  while(1){
-    now = Switch_In(); // one of your buttons
-    if((last == 0)&&(now == 1)){
-      Sound_Shoot(); // call one of your sounds
-    }
-    if((last == 0)&&(now == 2)){
-      Sound_Killed(); // call one of your sounds
-    }
-    if((last == 0)&&(now == 4)){
-      Sound_Explosion(); // call one of your sounds
-    }
-    if((last == 0)&&(now == 8)){
-      Sound_Fastinvader1(); // call one of your sounds
-    }
-    // modify this to test all your sounds
-  }
+void Game_Init() {
+  player.push(PLAYER_X >> 8, PLAYER_Y >> 8, 0, 0, 0); // initialize player
+  backgrounds.init(NUM_BACKGROUND);
+  blackRectangles.init(NUM_OBJECTS);
+  player.draw();
 }
 
 void drawPlayScreen() {
