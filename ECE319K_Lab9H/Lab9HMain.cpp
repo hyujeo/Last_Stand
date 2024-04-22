@@ -12,7 +12,6 @@
 #include "../inc/ST7735.h"
 #include "../inc/Clock.h"
 #include "../inc/LaunchPad.h"
-#include "../inc/TExaS.h"
 #include "../inc/Timer.h"
 #include "../inc/SlidePot.h"
 #include "../inc/DAC5.h"
@@ -21,8 +20,9 @@
 #include "LED.h"
 #include "Switch.h"
 #include "Sound.h"
-#include "images/images.h"
-//#include "Sprite.h"
+#include "SpriteList.h"
+#include "Image.h"
+#include "config.h"
 extern "C" void __disable_irq(void);
 extern "C" void __enable_irq(void);
 extern "C" void TIMG12_IRQHandler(void);
@@ -46,17 +46,26 @@ uint32_t Random(uint32_t n){
 
 SlidePot Sensor(1995,-1); // copy calibration from Lab 7
 
-//Sprite Sprites[100]; // Sprite 0 is player ship
+SpriteList player;
+SpriteList aliens;
+SpriteList playerLasers;
+SpriteList alienLasers;
+BackgroundList backgrounds;
+BackgroundList blackRectangles; // sprites that got removed. for printing black rectangles.
+
+int score = 0;
+int shield = 0;
 
 uint32_t ADC0_xpos;
 uint32_t ADC0_ypos;
 int32_t slidepot_distance;
 uint32_t button_inputs;
-uint8_t refresh;
-uint8_t last;
+int refresh = 0;
+int last = 0;
+
 
 // games  engine runs at 30Hz
-void TIMG12_IRQHandler(void){uint32_t pos,msg;
+void TIMG12_IRQHandler(void){
   if((TIMG12->CPU_INT.IIDX) == 1){ // this will acknowledge
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
@@ -127,77 +136,20 @@ const char *Phrases[3][4]={
   {Goodbye_English,Goodbye_Spanish,Goodbye_Portuguese,Goodbye_French},
   {Language_English,Language_Spanish,Language_Portuguese,Language_French}
 };
-// use main1 to observe special characters
-int main1(void){ // main1
-    char l;
-  __disable_irq();
-  PLL_Init(); // set bus speed
-  LaunchPad_Init();
-  ST7735_InitPrintf();
-  ST7735_FillScreen(0x0000);            // set screen to black
-  for(int myPhrase=0; myPhrase<= 2; myPhrase++){
-    for(int myL=0; myL<= 3; myL++){
-         ST7735_OutString((char *)Phrases[LANGUAGE][myL]);
-      ST7735_OutChar(' ');
-         ST7735_OutString((char *)Phrases[myPhrase][myL]);
-      ST7735_OutChar(13);
-    }
-  }
-  Clock_Delay1ms(3000);
-  ST7735_FillScreen(0x0000);       // set screen to black
-  l = 128;
-  while(1){
-    Clock_Delay1ms(2000);
-    for(int j=0; j < 3; j++){
-      for(int i=0;i<16;i++){
-        ST7735_SetCursor(7*j+0,i);
-        ST7735_OutUDec(l);
-        ST7735_OutChar(' ');
-        ST7735_OutChar(' ');
-        ST7735_SetCursor(7*j+4,i);
-        ST7735_OutChar(l);
-        l++;
-      }
-    }
-  }
+
+void Game_Init() {
+  player.push(PLAYER_X >> 8, PLAYER_Y >> 8, 0, 0, 0); // initialize player
+  backgrounds.init(NUM_BACKGROUND);
+  blackRectangles.init(NUM_OBJECTS);
+  player.draw();
 }
 
-// use main2 to observe graphics
-int main2(void){ // main2
-  __disable_irq();
-  PLL_Init(); // set bus speed
-  LaunchPad_Init();
-  ST7735_InitPrintf();
-    //note: if you colors are weird, see different options for
-    // ST7735_InitR(INITR_REDTAB); inside ST7735_InitPrintf()
-  ST7735_FillScreen(ST7735_BLACK);
-  ST7735_DrawBitmap(22, 159, PlayerShip0, 18,8); // player ship bottom
-  ST7735_DrawBitmap(53, 151, Bunker0, 18,5);
-  ST7735_DrawBitmap(42, 159, PlayerShip1, 18,8); // player ship bottom
-  ST7735_DrawBitmap(62, 159, PlayerShip2, 18,8); // player ship bottom
-  ST7735_DrawBitmap(82, 159, PlayerShip3, 18,8); // player ship bottom
-  ST7735_DrawBitmap(0, 9, SmallEnemy10pointA, 16,10);
-  ST7735_DrawBitmap(20,9, SmallEnemy10pointB, 16,10);
-  ST7735_DrawBitmap(40, 9, SmallEnemy20pointA, 16,10);
-  ST7735_DrawBitmap(60, 9, SmallEnemy20pointB, 16,10);
-  ST7735_DrawBitmap(80, 9, SmallEnemy30pointA, 16,10);
-
-  for(uint32_t t=500;t>0;t=t-5){
-    SmallFont_OutVertical(t,104,6); // top left
-    Clock_Delay1ms(50);              // delay 50 msec
-  }
-  ST7735_FillScreen(0x0000);   // set screen to black
-  ST7735_SetCursor(1, 1);
-  ST7735_OutString((char *)"GAME OVER");
-  ST7735_SetCursor(1, 2);
-  ST7735_OutString((char *)"Nice try,");
-  ST7735_SetCursor(1, 3);
-  ST7735_OutString((char *)"Earthling!");
-  ST7735_SetCursor(2, 4);
-  ST7735_OutUDec(1234);
-  while(1){
-  }
-}
+void drawPlayScreen() {
+  blackRectangles.draw('B'); // 'B' to draw simploy black rectangles
+  backgrounds.draw('I'); // 'I' to draw the actual image
+  aliens.draw(); // 
+  alienLasers.draw();
+  playerLasers.draw();
 
 // use main3 to test switches and LEDs
 // pressing any of the 5 buttons (4 regular buttons and 1 joystick button) turns on all 3 LEDs
@@ -268,6 +220,7 @@ int main4(void){
     }
     Clock_Delay(10000); // very bad way to avoid button debounce...just for testing :)
   }
+
 }
 // ALL ST7735 OUTPUT MUST OCCUR IN MAIN
 int main(void){ // final main
@@ -283,19 +236,18 @@ int main(void){ // final main
   LED_Init();    // initialize LED
   Sound_Init();  // initialize sound
   JoyStick_Init(); // initialize joy stick
-  TExaS_Init(0,0,&TExaS_LaunchPadLogicPB27PB26); // PB27 and PB26
     // initialize interrupts on TimerG12 at 30 Hz
   TimerG12_IntArm(80000000/30,2);
   // initialize all data structures
-  button_inputs = 0;
-  slidepot_distance = 0;
-  ADC0_xpos = 0;
-  ADC0_ypos = 0;
-  refresh = 0;
-  last = 0;
+  Game_Init();
   __enable_irq();
-
   while(1){
+
+  /*
+    if (refresh){
+      drawPlayScreen();
+    }*/
+
     // wait for semaphore
        // clear semaphore
        // update ST7735R
@@ -310,3 +262,4 @@ int main(void){ // final main
       }
   }
 }
+
