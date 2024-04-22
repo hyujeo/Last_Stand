@@ -11,13 +11,31 @@
 // initialize your LEDs
 void LED_Init(void);
 
-// data specifies which LED to turn on
-void LED_On(uint32_t data);
+// turns on RED LED
+void RED_LED_On(void);
 
-// data specifies which LED to turn off
-void LED_Off(uint32_t data);
+// turns off RED LED
+void RED_LED_Off(void);
 
-// data specifies which LED to toggle
-void LED_Toggle(uint32_t data);
+// toggles RED LED
+void RED_LED_Toggle(void);
+
+// turns on YELLOW LED
+void YELLOW_LED_On(void);
+
+// turns off YELLOW LED
+void YELLOW_LED_Off(void);
+
+// toggles YELLOW LED
+void YELLOW_LED_Toggle(void);
+
+// turns on GREEN LED
+void GREEN_LED_On(void);
+
+// turns off GREEN LED
+void GREEN_LED_Off(void);
+
+// toggles GREEN LED
+void GREEN_LED_Toggle(void);
 
 #endif /* LED_H_ */
