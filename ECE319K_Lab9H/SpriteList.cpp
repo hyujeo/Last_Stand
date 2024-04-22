@@ -9,22 +9,26 @@ int playerAY = 0;
 int accelerationFactor = 0;
 
 Image spriteImages[] = {
-    {playerOff, 19, 14}, // 0
-    {playerOn, 19, 14},
+    {player_off, 19, 14}, // 0
+    {player_on, 19, 14},
     {0,0,0},
     {0,0,0},
-    {alien1, 15, 15}, // 4
+    {alien_1, 15, 15}, // 4
     {0,0,0},
     {0,0,0},
     {0,0,0},
-    {playerLaser, 10, 10}, // 8
-    {alienLaser, 10, 10},
+    {player_laser, 10, 10}, // 8
+    {alien_laser, 10, 10},
     {0,0,0},
-    {0,0,0},/*
-    {alienExplosion1, , } // 12
-    {alienExplosion2, , }
-    {alienExplosion3, , }
-    {alienExplosion4, , }*/
+    {0,0,0},
+    {alien_1_explosion_1, 15, 15}, // 12
+    {alien_1_explosion_2, 15, 15},
+    {alien_1_explosion_3, 15, 15},
+    {alien_1_explosion_4, 15, 15},
+    {ship_explosion_1, 19, 14}, // 16
+    {ship_explosion_2, 19, 14},
+    {ship_explosion_3, 19, 14},
+    {ship_explosion_4, 19, 14},
 };
 
 int SpriteList::collides(Sprite* s) { // to check for player collision, do: enemies.collides(&player)
