@@ -20,8 +20,9 @@
 #include "LED.h"
 #include "Switch.h"
 #include "Sound.h"
-#include "images/images.h"
-#include "Sprite.h"
+#include "SpriteList.h"
+#include "Image.h"
+#include "config.h"
 extern "C" void __disable_irq(void);
 extern "C" void __enable_irq(void);
 extern "C" void TIMG12_IRQHandler(void);
@@ -45,10 +46,27 @@ uint32_t Random(uint32_t n){
 
 SlidePot Sensor(1500,0); // copy calibration from Lab 7
 
-Sprite Sprites[100]; // Sprite 0 is player ship
+bool refresh = false;
+
+SpriteList player;
+SpriteList aliens;
+SpriteList playerLasers;
+SpriteList alienLasers;
+BackgroundList backgrounds;
+BackgroundList blackRectangles; // sprites that got removed. for printing black rectangles.
+
+int score = 0;
+int shield = 0;
+
+void Game_Init() {
+  player.push(PLAYER_X >> 8, PLAYER_Y >> 8, 0, 0, 0); // initialize player
+  backgrounds.init(NUM_BACKGROUND);
+  blackRectangles.init(NUM_OBJECTS);
+  player.draw();
+}
 
 // games  engine runs at 30Hz
-void TIMG12_IRQHandler(void){uint32_t pos,msg;
+void TIMG12_IRQHandler(void){
   if((TIMG12->CPU_INT.IIDX) == 1){ // this will acknowledge
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
@@ -58,6 +76,7 @@ void TIMG12_IRQHandler(void){uint32_t pos,msg;
     // 3) move sprites
     // 4) start sounds
     // 5) set semaphore
+    refresh = true;
     // NO LCD OUTPUT IN INTERRUPT SERVICE ROUTINES
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
   }
@@ -86,8 +105,9 @@ const char *Phrases[3][4]={
   {Goodbye_English,Goodbye_Spanish,Goodbye_Portuguese,Goodbye_French},
   {Language_English,Language_Spanish,Language_Portuguese,Language_French}
 };
+
 // use main1 to observe special characters
-int main(void){ // main1
+int main1(void){ // main1
     char l;
   __disable_irq();
   PLL_Init(); // set bus speed
@@ -120,43 +140,14 @@ int main(void){ // main1
     }
   }
 }
-
-// use main2 to observe graphics
-int main2(void){ // main2
-  __disable_irq();
-  PLL_Init(); // set bus speed
-  LaunchPad_Init();
-  ST7735_InitPrintf();
-    //note: if you colors are weird, see different options for
-    // ST7735_InitR(INITR_REDTAB); inside ST7735_InitPrintf()
-  ST7735_FillScreen(ST7735_BLACK);
-  ST7735_DrawBitmap(22, 159, PlayerShip0, 18,8); // player ship bottom
-  ST7735_DrawBitmap(53, 151, Bunker0, 18,5);
-  ST7735_DrawBitmap(42, 159, PlayerShip1, 18,8); // player ship bottom
-  ST7735_DrawBitmap(62, 159, PlayerShip2, 18,8); // player ship bottom
-  ST7735_DrawBitmap(82, 159, PlayerShip3, 18,8); // player ship bottom
-  ST7735_DrawBitmap(0, 9, SmallEnemy10pointA, 16,10);
-  ST7735_DrawBitmap(20,9, SmallEnemy10pointB, 16,10);
-  ST7735_DrawBitmap(40, 9, SmallEnemy20pointA, 16,10);
-  ST7735_DrawBitmap(60, 9, SmallEnemy20pointB, 16,10);
-  ST7735_DrawBitmap(80, 9, SmallEnemy30pointA, 16,10);
-
-  for(uint32_t t=500;t>0;t=t-5){
-    SmallFont_OutVertical(t,104,6); // top left
-    Clock_Delay1ms(50);              // delay 50 msec
-  }
-  ST7735_FillScreen(0x0000);   // set screen to black
-  ST7735_SetCursor(1, 1);
+/*
+ * ST7735_SetCursor(1, 1);
   ST7735_OutString((char *)"GAME OVER");
   ST7735_SetCursor(1, 2);
   ST7735_OutString((char *)"Nice try,");
   ST7735_SetCursor(1, 3);
   ST7735_OutString((char *)"Earthling!");
-  ST7735_SetCursor(2, 4);
-  ST7735_OutUDec(1234);
-  while(1){
-  }
-}
+ */
 
 // use main3 to test switches and LEDs
 int main3(void){ // main3
@@ -197,8 +188,16 @@ int main4(void){ uint32_t last=0,now;
     // modify this to test all your sounds
   }
 }
+
+void drawPlayScreen() {
+  blackRectangles.draw('B'); // 'B' to draw simploy black rectangles
+  backgrounds.draw('I'); // 'I' to draw the actual image
+  aliens.draw(); // 
+  alienLasers.draw();
+  playerLasers.draw();
+}
 // ALL ST7735 OUTPUT MUST OCCUR IN MAIN
-int main5(void){ // final main
+int main(void){ // final main
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
@@ -214,12 +213,12 @@ int main5(void){ // final main
     // initialize interrupts on TimerG12 at 30 Hz
   TimerG12_IntArm(80000000/30,2);
   // initialize all data structures
+  Game_Init();
   __enable_irq();
-
   while(1){
-    // wait for semaphore
-       // clear semaphore
-       // update ST7735R
-    // check for end game or level switch
+    if (refresh){
+      drawPlayScreen();
+    }
   }
 }
+
