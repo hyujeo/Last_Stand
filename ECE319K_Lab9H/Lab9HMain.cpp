@@ -296,12 +296,6 @@ int main(void){ // final main
   Welcome_Screen();
   __enable_irq();
   while(1){
-
-  /*
-    if (refresh){
-      drawPlayScreen();
-    }*/
-
     // wait for semaphore
        // clear semaphore
        // update ST7735R
@@ -311,11 +305,11 @@ int main(void){ // final main
               if((ADC0_ypos > 2500) && (language == 1)){
                   language = 0;
                   Welcome_Screen();
-                  //Sound_Ufo_Highpitch_Menu();
+                  Sound_Ufo_Highpitch_Menu();
               }else if((ADC0_ypos < 2000) && (ADC0_ypos > 0) && (language == 0)){
                   language = 1;
                   Welcome_Screen();
-                  //Sound_Ufo_Highpitch_Menu();
+                  Sound_Ufo_Highpitch_Menu();
               }else if(forced == 1){
                   Welcome_Screen();
                   forced = 0;
@@ -331,11 +325,11 @@ int main(void){ // final main
               if((ADC0_ypos > 2500) && (end_selection == 1)){
                   end_selection = 0;
                   Game_Over();
-                  //Sound_Ufo_Highpitch_Menu();
+                  Sound_Ufo_Highpitch_Menu();
               }else if((ADC0_ypos < 2000) && (ADC0_ypos > 0) && (end_selection == 0)){
                   end_selection = 1;
                   Game_Over();
-                  //Sound_Ufo_Highpitch_Menu();
+                  Sound_Ufo_Highpitch_Menu();
               }
           }
 
