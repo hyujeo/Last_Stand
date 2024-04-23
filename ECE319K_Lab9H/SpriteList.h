@@ -13,6 +13,8 @@ bool Player::update()
 }
 */
 
+void Update_Player_Speed(int joy_x, int joy_y, int factor);
+
 class SpriteList {
 public:
     Sprite* head = 0;
@@ -29,8 +31,8 @@ public:
     // return 1 if collides, 0 otherwise
     int collides(Sprite* enemy);
 
-    // count the number of collisions that happened between the two lists
-    // when collision happens:
+    // return 1 if collision exists between two lists, 0 otherwise
+    // elements of both may be altered/removed:
     //    remove laser
     //    change alien to exploded image
     int detectCollisions(SpriteList& enemies);

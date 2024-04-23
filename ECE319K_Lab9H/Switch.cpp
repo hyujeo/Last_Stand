@@ -19,7 +19,7 @@ void Input_Switch_Handler::Init(void){
 // return current state of left switch
 uint8_t Input_Switch_Handler::JOYSTICK_Switch_In(void){
     // write this
-    return this->JOYSTICK;
+    return 0;
 }
 
 // return current state of left switch

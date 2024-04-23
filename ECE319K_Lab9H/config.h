@@ -60,6 +60,7 @@
 #define STAR_SMALL_ID       2
 #define STAR_BIG_ID         3
 #define ALIEN1_ID           4
+#define PLAYER_LASER_ID     8
 #define ALIEN_LASER_ID      9
 #define ALIEN_EXPLOSION1_ID 12
 

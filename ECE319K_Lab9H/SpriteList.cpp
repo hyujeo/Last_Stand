@@ -1,12 +1,28 @@
 #include <SpriteList.h>
 #include "../inc/ST7735.h"
 
+    // xPos = x >> 8
+    // yPos = y >> 8
+    // xVel = vx >> 3
+    // yVel = vy >> 3
+    // xVel = 30/32 pixels/s
+    //      = 1/32 pixels/interrupt
+    //
+    // vx = 2^-8 pixels/interrupt
+    //    = x/interrupt
+    // 2^3vx = 1/32 pixels/interrupt
+    // 2^11vx = 8 pixels/interrupt
+
 extern BackgroundList blackRectangles;
 short playerVX = 0;
 short playerVY = 0;
 int playerAX = 0;
 int playerAY = 0;
 int accelerationFactor = 0;
+
+void Update_Player_Speed(int joy_x, int joy_y, int factor) {
+    // TODO
+}
 
 Image spriteImages[] = {
     {player_off, 19, 14}, // 0
@@ -35,17 +51,18 @@ int SpriteList::collides(Sprite* s) { // to check for player collision, do: enem
     Sprite* enemy = head;
     Sprite* prev = 0;
     while(enemy){
-        if (enemy->x){} // TODO
         int dx = s->x - enemy->x;
         int dy = s->y - enemy->y;
         int r = spriteImages[s->img].width + spriteImages[enemy->img].width;
         if (dx*dx + dy*dy < r*(r + HITBOX)){ // collided
-            if (enemy->img == ALIEN_LASER_ID) { // remove laser
+            switch (enemy->img){
+            case ALIEN_LASER_ID:
                 this->removeFromList(enemy, prev);
                 enemy = prev;
-            }
-            else if (enemy->img == ALIEN1_ID) { // change alien to exploded state
+                break;
+            case ALIEN1_ID:
                 enemy->img = ALIEN_EXPLOSION1_ID;
+                break;
             }
             return 1;
         }
@@ -54,14 +71,17 @@ int SpriteList::collides(Sprite* s) { // to check for player collision, do: enem
     return 0;
 }
 int SpriteList::detectCollisions(SpriteList& enemies) {
-    int collisions = 0;
     Sprite*s = head;
     Sprite* prev = 0;
     while(s){
-        
-        collisions += enemies.collides(s);
+        int c = enemies.collides(s);
+        if (c){
+            removeFromList(s, prev);
+            return 1;
+        }
+        s = s->next;
     }
-    return collisions;
+    return 0;
 }
 void SpriteList::draw() {
     Sprite* s = head;
@@ -90,7 +110,9 @@ void SpriteList::removeFromList(Sprite* s, Sprite* prev) {
 void SpriteList::update() {
     Sprite* s = head;
     while(head){
-        
+        switch (s->img){
+        case 2: break; // TODO
+        }
     }
 }
 
