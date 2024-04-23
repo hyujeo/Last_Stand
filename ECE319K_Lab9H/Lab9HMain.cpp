@@ -261,7 +261,6 @@ int main(void){ // final main
   // initialize all data structures
   //Game_Init();
   Welcome_Screen();
-  language = 1;
   __enable_irq();
   while(1){
 
@@ -279,9 +278,11 @@ int main(void){ // final main
               if((ADC0_ypos > 2500) && (language == 1)){
                   language = 0;
                   Welcome_Screen();
-              }else if((ADC0_ypos < 2000) && (language == 0)){
+                  Sound_Ufo_Highpitch_Menu();
+              }else if((ADC0_ypos < 2000) && (ADC0_ypos > 0) && (language == 0)){
                   language = 1;
                   Welcome_Screen();
+                  Sound_Ufo_Highpitch_Menu();
               }
           }
 
