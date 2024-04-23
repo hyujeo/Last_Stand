@@ -29,12 +29,7 @@ void Sound_Stop(void);
 // following 8 functions do not output to the DAC
 // they configure pointers/counters and initiate the sound by calling Sound_Start
 void Sound_Shoot(void);
-void Sound_Killed(void);
 void Sound_Explosion(void);
-void Sound_Fastinvader1(void);
-void Sound_Fastinvader2(void);
 void Sound_Ufo_Highpitch_Menu(void);
-void Sound_Fastinvader4(void);
-void Sound_Highpitch(void);
 
 #endif

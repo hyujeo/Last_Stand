@@ -54,8 +54,10 @@ class BackgroundList {
     // update position according to player speed
 public:
     int size = 0;
+    int length = 0;
     Background* array;
     void init(int size);
+    void push(int xPos, int yPos, int img);
     void update();
     void draw(char mode);
 };
