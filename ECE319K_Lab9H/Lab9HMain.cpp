@@ -63,6 +63,8 @@ int32_t slidepot;
 uint32_t button_inputs;
 
 bool refresh = false;
+bool refresh_menu, refresh_score = false;
+
 uint8_t prev_up, prev_down, prev_right, prev_left = 0;
 int language = 0; // 0 is english, 1 is spanish
 int score_screen_selection = 0;
@@ -75,11 +77,14 @@ void TIMG12_IRQHandler(void){
         GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
         GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
 
-    // 1) sample slide pot and joystick
+
+    // 1) increment random number to randomize game
+    Random32();
+
+    // 2) sample ADC, read input switches
     slidepot = Sensor.In();
     JoyStick_In(&joystick_x, &joystick_y);
 
-    // 2) read input switches
     uint8_t all_switches = Switches.All_Switch_In();
     uint8_t up    = Switches.UP_Switch_In();
     uint8_t down  = Switches.DOWN_Switch_In();
@@ -91,16 +96,18 @@ void TIMG12_IRQHandler(void){
     // Menu screen
     case 0:
         // any button on menu screen => game start
-        if (all_switches){
+        if (all_switches && !prev_up && !prev_down && !prev_left && !prev_right){
             current_screen = 1;
         }
         if (joystick_y > 3000 && language == 1){
-            Sound_Ufo_Highpitch_Menu();
+            Sound_Menu_Selection();
+            refresh_menu = true;
             language = 0;
         }
-        if (joystick_y < 2000 && joystick_y > 1000 && language == 0){
-            Sound_Ufo_Highpitch_Menu();
+        if (joystick_y < 1000 && language == 0){
+            Sound_Menu_Selection();
             language = 1;
+            refresh_menu = true;
         }
         break;
 
@@ -108,17 +115,23 @@ void TIMG12_IRQHandler(void){
     case 1:
         Update_Player_Speed(joystick_x, joystick_y, slidepot);
         // down button is shoot
-        if (Switches.DOWN_Switch_In() && !prev_down){
+        if (down && !prev_down){
             Sound_Shoot();
             prev_down = true;
             playerLasers.push(PLAYER_X >> 8, PLAYER_Y >> 8, joystick_x, joystick_y, PLAYER_LASER_ID);
+        }
+
+        // TODO REMOVE UP BUTTON TO NAVIGATE TO SCORE
+        if (up && !prev_up){
+            current_screen = 2;
         }
         break;
 
     // Score screen
     case 2:
-        // press right/up in score screen => either go back to menu (selection=1) or replay (selection=0)
-        if ((right && !prev_right) || (up && !prev_up)){
+        // press up in score screen => confirm selection
+        // go back to menu (selection=1) or replay (selection=0)
+        if (all_switches && !prev_up && !prev_down && !prev_left && !prev_right){
             Sound_Ufo_Highpitch_Menu();
             if (score_screen_selection == 0){
                 current_screen = 1;
@@ -126,6 +139,18 @@ void TIMG12_IRQHandler(void){
                 current_screen = 0;
             }
         }
+        // joystick_y to select from score screen
+        if (joystick_y > 3000 && score_screen_selection == 1){
+            Sound_Menu_Selection();
+            score_screen_selection = 0;
+            refresh_score = true;
+        }
+        if (joystick_y < 1000 && score_screen_selection == 0){
+            Sound_Menu_Selection();
+            score_screen_selection = 1;
+            refresh_score = true;
+        }
+
         break;
     default: break; // never reached
     }
@@ -180,9 +205,7 @@ void Game_Init() {
     }
 }
 
-void Menu_Screen_Init() {}
-
-void Menu_Screen_Update() {
+void Menu_Screen_Init() {
     ST7735_FillScreen(ST7735_BLACK);
     ST7735_DrawString(1, 2, (Phrases[language][0]), ST7735_RED, ST7735_BLACK, 1); // title
     ST7735_DrawString(1, 6, (Phrases[language][2]), ST7735_GREEN, ST7735_BLACK, 1); // language header
@@ -199,7 +222,16 @@ void Menu_Screen_Update() {
     }
 }
 
-void Play_Screen_Init() {}
+void Menu_Screen_Update() {
+    ST7735_SetCursor(0,0);
+    printf("%05d\n", joystick_y);
+    return; // nothing for now
+}
+
+void Play_Screen_Init() {
+    ST7735_FillScreen(ST7735_BLACK);
+    player.draw();
+}
 
 void Play_Screen_Update() {
     blackRectangles.draw('B'); // 'B' to draw simploy black rectangles
@@ -210,10 +242,6 @@ void Play_Screen_Update() {
 }
 
 void Score_Screen_Init() {
-
-}
-
-void Score_Screen_Update() {
     ST7735_FillScreen(ST7735_BLACK);
     ST7735_DrawString(5, 2, (Phrases[language][4]), ST7735_RED, ST7735_BLACK, 1); // game over header
     ST7735_SetCursor(6,7);
@@ -228,6 +256,10 @@ void Score_Screen_Update() {
         ST7735_DrawString(5, 10, (Phrases[language][6]), ST7735_WHITE, ST7735_BLACK, 1); // restart
         ST7735_DrawString(5, 12, Menu_English, ST7735_BLACK, ST7735_WHITE, 1); // menu
     }
+}
+
+void Score_Screen_Update() {
+    return; // nothing for now
 }
 
 // ALL ST7735 OUTPUT MUST OCCUR IN MAIN
@@ -258,7 +290,11 @@ int main(void){ // final main
             //ST7735_FillScreen(ST7735_BLACK);
             // Menu screen
             case 0:
-                previous_screen = 0;
+                if (previous_screen != current_screen || refresh_menu){
+                    previous_screen = current_screen;
+                    refresh_menu = false;
+                    Menu_Screen_Init();
+                }
                 Menu_Screen_Update();
                 break;
 
@@ -269,11 +305,17 @@ int main(void){ // final main
                     Play_Screen_Init();
                 }
                 Play_Screen_Update();
+                break;
 
             // Score screen
             case 2:
-                previous_screen = current_screen;
+                if (previous_screen != current_screen || refresh_score){
+                        previous_screen = current_screen;
+                        refresh_score = false;
+                        Score_Screen_Init();
+                    }
                 Score_Screen_Update();
+                break;
             }
 
             //ST7735_SetCursor(0,0);

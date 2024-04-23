@@ -104,3 +104,7 @@ void Sound_Ufo_Highpitch_Menu(void){
     Sound_Start(2, 1802);
 }
 
+void Sound_Menu_Selection(void){
+    // TODO add menu selection sound
+}
+
