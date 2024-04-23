@@ -53,6 +53,8 @@ SpriteList alienLasers;
 BackgroundList backgrounds;
 BackgroundList blackRectangles; // sprites that got removed. for printing black rectangles.
 
+Input_Switch_Handler Switches;
+
 int score = 0;
 int shield = 0;
 
@@ -63,8 +65,7 @@ uint32_t button_inputs;
 int refresh = 0;
 int last = 0;
 int language = 0; // 0 is english, 1 is spanish
-int welcome_screen = 1; // true initially
-
+int current_screen = 0; // 0 - welcome screen ; 1 - main game; 2 - Game Over
 
 // games  engine runs at 30Hz
 void TIMG12_IRQHandler(void){
@@ -81,31 +82,17 @@ void TIMG12_IRQHandler(void){
         slidepot_distance = 2000;
     }
     // 2) read input switches
+    Switches.All_Switch_In();
     JoyStick_In(&ADC0_xpos, &ADC0_ypos);
-    button_inputs = Switch_In();
+    uint8_t shoot_btn_input = Switches.DOWN_Switch_In();
     // 3) move sprites
     // 4) start sounds
     // determine which sound to play based on certain scenarious
-    if((last == 0)&&((button_inputs&0x01) == 1)){
+    if((last == 0) && (shoot_btn_input == 1) && (current_screen == 1)){
         last = 1;
         Sound_Shoot(); // if shoot button was pressed
     }
-    // only button that makes sound effect is shoot sound
-    // rest of these sounds will be respectively called when needed
-    // these conditionals are just for bare testing :)
-    if((button_inputs&0x02) == 2){
-        Sound_Killed(); // if an invader died *change conditional*
-    }
-    if((button_inputs&0x04) == 4){
-        Sound_Explosion(); // if something blew up *change conditional*
-    }
-    if((button_inputs&0x08) == 8){
-        Sound_Fastinvader1(); // just an extra sfx *change conditional*
-    }
-    if((button_inputs&0x10) == 16){
-        Sound_Fastinvader2(); // another extra sfx *change conditional*
-    }
-    if((last!=0)&&(button_inputs==0)){ // high to low
+    if((last!=0)&&(shoot_btn_input==0)){ // high to low
         last = 0;
     }
     // 5) set semaphore
@@ -114,6 +101,14 @@ void TIMG12_IRQHandler(void){
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
   }
 }
+
+// button inputs updated once every 30Hz
+//void TIMG0_IRQHandler(void){
+//    if((TIMG0->CPU_INT.IIDX) == 1){ // Acknowledge
+//        Switches.All_Switch_In();
+//    }
+//}
+
 uint8_t TExaS_LaunchPadLogicPB27PB26(void){
   return (0x80|((GPIOB->DOUT31_0>>26)&0x03));
 }
@@ -178,13 +173,13 @@ int main3(void){ // main3
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
-  Switch_Init(); // initialize switches
+  Switches.Init(); // initialize switches
   LED_Init(); // initialize LED
   uint32_t INPUTTTT;
   uint8_t is_on = 0;
   while(1){
     // write code to test switches and LEDs
-      INPUTTTT = Switch_In();
+      INPUTTTT = Switches.All_Switch_In();
    if(INPUTTTT != 0 && is_on == 0){
        is_on = 1;
        RED_LED_On();
@@ -206,13 +201,13 @@ int main4(void){
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
-  Switch_Init(); // initialize switches
+  Switches.Init(); // initialize switches
   LED_Init(); // initialize LED
   Sound_Init();  // initialize sound
   __enable_irq();
   while(1){
       // pretend TimerG0 where button values will be updated
-    now = Switch_In(); // one of your buttons
+    now = Switches.All_Switch_In(); // one of your buttons
     if((last == 0)&&((now&0x01) == 1)){
         last = 1;
       Sound_Shoot(); // call one of your sounds
@@ -252,12 +247,14 @@ int main(void){ // final main
     // ST7735_InitR(INITR_REDTAB); inside ST7735_InitPrintf()
   ST7735_FillScreen(ST7735_BLACK);
   Sensor.Init(); // PB18 = ADC1 channel 5, slidepot
-  Switch_Init(); // initialize switches
+  Switches.Init(); // initialize switches
   LED_Init();    // initialize LED
   Sound_Init();  // initialize sound
   JoyStick_Init(); // initialize joy stick
     // initialize interrupts on TimerG12 at 30 Hz
   TimerG12_IntArm(80000000/30,2);
+  // initialize interrupts on TimerG0 at 30 Hz
+  //TimerG0_IntArm(13333,100,2); //
   // initialize all data structures
   //Game_Init();
   Welcome_Screen();
@@ -274,7 +271,7 @@ int main(void){ // final main
        // update ST7735R
     // check for end game or level switch
       if(refresh != 0){
-          if(welcome_screen){
+          if(current_screen == 0){
               if((ADC0_ypos > 2500) && (language == 1)){
                   language = 0;
                   Welcome_Screen();
