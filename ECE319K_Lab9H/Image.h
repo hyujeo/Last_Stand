@@ -245,8 +245,8 @@ const unsigned short star_big[] = { // 5x5
 };
 
 const unsigned short star_small[] = { // 1x1
-    0xFFFF;
-}
+    0xFFFF,
+};
 
 
 

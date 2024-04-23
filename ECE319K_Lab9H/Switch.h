@@ -1,12 +1,7 @@
-/*
- * Switch.h
- *
- *  Created on: Nov 5, 2023
- *      Author: jonat
- */
-
 #ifndef SWITCH_H_
 #define SWITCH_H_
+
+#include "config.h"
 
 // initialize your switches
 void Switch_Init(void);

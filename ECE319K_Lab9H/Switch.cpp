@@ -1,24 +1,6 @@
-/*
- * Switch.cpp
- *
- *  Created on: Nov 5, 2023
- *      Author:
- */
 #include <ti/devices/msp/msp.h>
 #include "../inc/LaunchPad.h"
-
-// refer to table 2.2.1 in Textbook in Chapter 2
-#define LEFT_BTN PB16INDEX // PB16
-#define UP_BTN PB17INDEX // PB17
-#define RIGHT_BTN PB12INDEX // PB12
-#define DOWN_BTN PB13INDEX // PB13
-#define JOYSTICK_BTN PA24INDEX // PA24
-// update if different inputs ^ v
-#define LEFT_INDEX 16
-#define UP_INDEX 17
-#define RIGHT_INDEX 12
-#define DOWN_INDEX 13
-#define JOYSTICK_INDEX 24
+#include "Switch.h"
 
 // LaunchPad.h defines all the indices into the PINCM table
 void Switch_Init(void){

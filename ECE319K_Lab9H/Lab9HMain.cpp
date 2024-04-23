@@ -147,9 +147,10 @@ void Game_Init() {
 void drawPlayScreen() {
   blackRectangles.draw('B'); // 'B' to draw simploy black rectangles
   backgrounds.draw('I'); // 'I' to draw the actual image
-  aliens.draw(); // 
+  aliens.draw();
   alienLasers.draw();
   playerLasers.draw();
+}
 
 // use main3 to test switches and LEDs
 // pressing any of the 5 buttons (4 regular buttons and 1 joystick button) turns on all 3 LEDs
@@ -188,7 +189,6 @@ int main4(void){
   Switch_Init(); // initialize switches
   LED_Init(); // initialize LED
   Sound_Init();  // initialize sound
-  TExaS_Init(ADC0,6,0); // ADC1 channel 6 is PB20, TExaS scope
   __enable_irq();
   while(1){
       // pretend TimerG0 where button values will be updated
@@ -254,9 +254,9 @@ int main(void){ // final main
     // check for end game or level switch
       if(refresh != 0){
           ST7735_SetCursor(0,0);
-          //ST7735_FillScreen(ST7735_BLACK);
-          //printf("x: %d\n", ADC0_xpos);
-          //printf("y: %d\n", ADC0_ypos);
+          ST7735_FillScreen(ST7735_BLACK);
+          printf("x: %d\n", ADC0_xpos);
+          printf("y: %d\n", ADC0_ypos);
           printf("Distance: %d.%03dcm\n", (slidepot_distance/1000)%10,slidepot_distance%1000);
           refresh = 0;
       }

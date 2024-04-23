@@ -1,9 +1,3 @@
-/*
- * LED.cpp
- *
- *  Created on: Nov 5, 2023
- *      Author:
- */
 #include <ti/devices/msp/msp.h>
 #include "../inc/LaunchPad.h"
 // LaunchPad.h defines all the indices into the PINCM table
