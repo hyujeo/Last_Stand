@@ -11,7 +11,7 @@
 #include "../inc/Timer.h"
 
 // arrays for capability to add sound waves
-const uint8_t* pointer_to_sound[5] = {shoot+4080, invaderkilled+3377, explosion+8731, fastinvader1+982, fastinvader2+1042}; // array of sound wave pointers pointing to last element+1
+const uint8_t* pointer_to_sound[5] = {shoot+4080, explosion+8731,}; // array of sound wave pointers pointing to last element+1
 int32_t sound_positions[5] = {0, 0, 0, 0, 0}; // finished when at position 0
 int8_t non_zero_values; // avoids having to iterate
 
@@ -95,26 +95,7 @@ void Sound_Shoot(void){
 // write this
   Sound_Start(0, 4080);
 }
-void Sound_Killed(void){
-// write this
-  Sound_Start(1, 3377);
-}
 void Sound_Explosion(void){
 // write this
-  Sound_Start(2, 8731);
-}
-void Sound_Fastinvader1(void){
-  Sound_Start(3, 982);
-}
-void Sound_Fastinvader2(void){
-  Sound_Start(4, 1042);
-}
-void Sound_Fastinvader3(void){
-  
-}
-void Sound_Fastinvader4(void){
-  
-}
-void Sound_Highpitch(void){
-  
+  Sound_Start(1, 8731);
 }

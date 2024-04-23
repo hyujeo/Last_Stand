@@ -11,8 +11,8 @@ int accelerationFactor = 0;
 Image spriteImages[] = {
     {player_off, 19, 14}, // 0
     {player_on, 19, 14},
-    {0,0,0},
-    {0,0,0},
+    {star_small, 1, 1},
+    {star_big, 5, 5},
     {alien_1, 15, 15}, // 4
     {0,0,0},
     {0,0,0},
@@ -68,8 +68,8 @@ void SpriteList::draw() {
     while(s){
     short width = spriteImages[s->img].width;
     short height = spriteImages[s->img].height;
-    short xPix = s->x >> 8;
-    short yPix = (s->y >> 8) + 16;
+    short xPix = (s->x >> 8) - 64;
+    short yPix = (s->y >> 8) - 48;
     ST7735_DrawBitmap(xPix - (width >> 1), yPix + (height >> 1), spriteImages[s->img].array, width, height);
     s = s->next;
   }
@@ -94,11 +94,25 @@ void SpriteList::update() {
     }
 }
 
+void BackgroundList::init(int _size) {
+    size = _size;
+    length = 0;
+    array = new Background[5];
+}
+
+void BackgroundList::push(int xPos, int yPos, int img) {
+    if (length >= size) return;
+    array[length].x = xPos << 8;
+    array[length].y = yPos << 8;
+    array[length].img = img;
+    length++;
+}
+
 void BackgroundList::draw(char mode) {
-    for (int i = 0; i < size; i++){
+    for (int i = 0; i < length; i++){
         Background b = array[i];
-        short xPix = b.x >> 8;
-        short yPix = (b.y >> 8) + 16;
+        signed char xPix = (b.x >> 8) - 64;
+        signed char yPix = (b.y >> 8) - 48;
         short width = spriteImages[b.img].width;
         short height = spriteImages[b.img].height;
         if (mode == 'B'){
@@ -107,9 +121,5 @@ void BackgroundList::draw(char mode) {
             ST7735_DrawBitmap(xPix - (width >> 1), yPix + (height >> 1), spriteImages[b.img].array, width, height);
         }
     }
-}
-void BackgroundList::init(int _size) {
-    size = _size;
-    array = new Background[size];
 }
 

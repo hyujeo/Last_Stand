@@ -22,6 +22,8 @@
     #define RIGHT_INDEX 19
     #define DOWN_INDEX 17
     #define JOYSTICK_INDEX 17
+
+    #define USE_INTERNAL_RESISTOR 0x10000
 #else
     #define JOYSTICK_CHANNEL_X 1
     #define JOYSTICK_CHANNEL_Y 0
@@ -38,26 +40,31 @@
     #define RIGHT_INDEX 12
     #define DOWN_INDEX 13
     #define JOYSTICK_INDEX 24
+
+    #define USE_INTERNAL_RESISTOR 0
 #endif
+
 
 // increase friction to decrease max speed
 #define FRICTION 11
 
-// player coordinates in 128x128, with << 8 to fit Sprite standards
+// player coordinates in 256x256, with << 8 to fit Sprite standards
 // adjust player location on screen
-#define PLAYER_X 64 << 8
-#define PLAYER_Y 64 << 8
+#define PLAYER_X 128 << 8
+#define PLAYER_Y 128 << 8
 
 // default = 0, increase to 
 #define HITBOX 0
 
 // list of image numbers, as indices in Image.h::images
+#define STAR_SMALL_ID       2
+#define STAR_BIG_ID         3
 #define ALIEN1_ID           4
 #define ALIEN_LASER_ID      9
 #define ALIEN_EXPLOSION1_ID 12
 
 // number of backgrounds, number of total objects = sprites + backgrounds
-#define NUM_BACKGROUND 100
-#define NUM_OBJECTS    250
+#define MAX_BACKGROUND 100
+#define MAX_OBJECTS    250
 
 #endif //LAST_STAND_CONFIG_H

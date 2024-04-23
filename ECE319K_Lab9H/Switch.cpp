@@ -5,10 +5,10 @@
 // LaunchPad.h defines all the indices into the PINCM table
 void Switch_Init(void){
     // write this
-    IOMUX->SECCFG.PINCM[LEFT_BTN] = 0x00040081; // input
-    IOMUX->SECCFG.PINCM[UP_BTN] = 0x00040081; // input
-    IOMUX->SECCFG.PINCM[RIGHT_BTN] = 0x00040081; // input
-    IOMUX->SECCFG.PINCM[DOWN_BTN] = 0x00040081; // input
+    IOMUX->SECCFG.PINCM[LEFT_BTN] = 0x00040081 + USE_INTERNAL_RESISTOR;// input
+    IOMUX->SECCFG.PINCM[UP_BTN] = 0x00040081 + USE_INTERNAL_RESISTOR; // input
+    IOMUX->SECCFG.PINCM[RIGHT_BTN] = 0x00040081 + USE_INTERNAL_RESISTOR; // input
+    IOMUX->SECCFG.PINCM[DOWN_BTN] = 0x00040081 + USE_INTERNAL_RESISTOR; // input
     IOMUX->SECCFG.PINCM[JOYSTICK_BTN] = 0x00050081; // input with pull down resistor
 }
 
