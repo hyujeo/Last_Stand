@@ -447,6 +447,7 @@ void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t b
  * @note bgColor is Black and size is 1
  * @brief  Draw a string 
 */
+uint32_t ST7735_DrawString(uint16_t x, uint16_t y, const char *pt, int16_t textColor, int16_t bgColor, uint8_t size);;
 uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor);;
 
 
