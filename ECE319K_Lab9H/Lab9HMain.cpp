@@ -88,7 +88,7 @@ void TIMG12_IRQHandler(void){
     // 3) move sprites
     // 4) start sounds
     // determine which sound to play based on certain scenarious
-    if((last == 0) && (shoot_btn_input == 1) && (current_screen == 1)){
+    if((last == 0) && (shoot_btn_input == 1) && (current_screen == 0)){
         last = 1;
         Sound_Shoot(); // if shoot button was pressed
     }
