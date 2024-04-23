@@ -46,7 +46,7 @@ void SysTick_Handler(void){ // called at 11 kHz
     // output one value to DAC if a sound is active
    if(non_zero_values > 0){
        uint32_t output = 0;
-       for(int i = 0; i < 6;i++){
+       for(int i = 0; i < 3;i++){
            if(sound_positions[i] != 0){
                output+=(pointer_to_sound[i][-1*sound_positions[i]])/non_zero_values; // gather sum of active sound waves
                sound_positions[i]-=1;

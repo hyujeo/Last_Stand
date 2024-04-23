@@ -98,7 +98,7 @@ void TIMG12_IRQHandler(void){
             Sound_Ufo_Highpitch_Menu();
             language = 0;
         }
-        if (joystick_y < 1000 && language == 0){
+        if (joystick_y < 2000 && joystick_y > 1000 && language == 0){
             Sound_Ufo_Highpitch_Menu();
             language = 1;
         }
@@ -115,7 +115,7 @@ void TIMG12_IRQHandler(void){
         }
         break;
 
-    // Score screen    
+    // Score screen
     case 2:
         // press right/up in score screen => either go back to menu (selection=1) or replay (selection=0)
         if ((right && !prev_right) || (up && !prev_up)){
@@ -134,14 +134,13 @@ void TIMG12_IRQHandler(void){
 
 
     // 5) set semaphore and update 'prev' values
-    refresh = true;
     prev_up    = up;
     prev_down  = down;
     prev_left  = left;
     prev_right = right;
     // NO LCD OUTPUT IN INTERRUPT SERVICE ROUTINES
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
-    ST7735_FillScreen(0xFFFF);
+    refresh = true;
     }
 }
 
@@ -246,16 +245,17 @@ int main(void){ // final main
     // initialize interrupts on TimerG12 at 30 Hz
     TimerG12_IntArm(80000000/30,2);
     // initialize all data structures
+    Menu_Screen_Update();
     Game_Init();
     __enable_irq();
     while(1){
         // check for end game or level switch
         if(refresh){
-            ST7735_FillScreen(0);
+            //ST7735_FillScreen(ST7735_BLACK);
             refresh = false;
-            ST7735_FillScreen(0xFFFF);
+            //ST7735_FillScreen(ST7735_BLACK);
             switch (current_screen){
-            ST7735_FillScreen(0);
+            //ST7735_FillScreen(ST7735_BLACK);
             // Menu screen
             case 0:
                 previous_screen = 0;
@@ -280,7 +280,7 @@ int main(void){ // final main
             //ST7735_FillScreen(ST7735_BLACK);
             //ST7735_FillRect(0, 0, 180, 20, ST7735_BLACK);
             //printf("x: %d\n", ADC0_xpos);
-            //printf("y: %d\n", ADC0_ypos);
+            //printf("y: %d\n", joystick_y);
             //printf("Distance: %d.%03dcm\n", (slidepot_distance/1000)%10,slidepot_distance%1000);
 
         }
