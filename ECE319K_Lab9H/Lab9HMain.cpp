@@ -62,6 +62,8 @@ int32_t slidepot_distance;
 uint32_t button_inputs;
 int refresh = 0;
 int last = 0;
+int language = 0; // 0 is english, 1 is spanish
+int welcome_screen = 1; // true initially
 
 
 // games  engine runs at 30Hz
@@ -119,23 +121,41 @@ uint8_t TExaS_LaunchPadLogicPB27PB26(void){
 typedef enum {English, Spanish, Portuguese, French} Language_t;
 Language_t myLanguage=English;
 typedef enum {HELLO, GOODBYE, LANGUAGE} phrase_t;
-const char Hello_English[] ="Hello";
-const char Hello_Spanish[] ="\xADHola!";
-const char Hello_Portuguese[] = "Ol\xA0";
-const char Hello_French[] ="All\x83";
-const char Goodbye_English[]="Goodbye";
-const char Goodbye_Spanish[]="Adi\xA2s";
+const char Title_English[] ="Last Stand";
+const char Title_Spanish[] ="La Ultima Batalla";
+const char Directions_English[] ="-Press Any To Begin-";
+const char Directions_Spanish[] = "-Toque Para Empezar-";
+const char Sel_Language_English[]="Language:";
+const char Sel_Language_Spanish[]="Lenguaje:";
+const char Language_English[]=" English";
+const char Language_Spanish[]=" Espa\xA4ol";
 const char Goodbye_Portuguese[] = "Tchau";
 const char Goodbye_French[] = "Au revoir";
-const char Language_English[]="English";
-const char Language_Spanish[]="Espa\xA4ol";
 const char Language_Portuguese[]="Portugu\x88s";
 const char Language_French[]="Fran\x87" "ais";
-const char *Phrases[3][4]={
-  {Hello_English,Hello_Spanish,Hello_Portuguese,Hello_French},
-  {Goodbye_English,Goodbye_Spanish,Goodbye_Portuguese,Goodbye_French},
-  {Language_English,Language_Spanish,Language_Portuguese,Language_French}
+const char *Phrases[2][4]={
+  {Title_English,Directions_English,Sel_Language_English,Language_English}, // row 1 English
+  {Title_Spanish,Directions_Spanish,Sel_Language_Spanish,Language_Spanish}, // row 2 Spanish
 };
+
+void Welcome_Screen(){
+    //backgrounds.init(NUM_BACKGROUND);
+    //backgrounds.draw('B');
+    ST7735_FillScreen(ST7735_BLACK);
+    ST7735_DrawString(1, 2, (Phrases[language][0]), ST7735_RED, ST7735_BLACK, 1); // title
+    ST7735_DrawString(1, 6, (Phrases[language][2]), ST7735_GREEN, ST7735_BLACK, 1); // language header
+    ST7735_DrawString(1, 12, (Phrases[language][1]), ST7735_WHITE, ST7735_BLACK, 1); // directions
+
+    if(language == 0){
+        ST7735_DrawString(3, 8, (Phrases[0][3]), ST7735_BLACK, ST7735_YELLOW, 1); // language
+        ST7735_DrawString(3, 9, (Phrases[1][3]), ST7735_WHITE, ST7735_BLACK, 1); // language
+    }else{
+        ST7735_DrawString(3, 8, (Phrases[0][3]), ST7735_WHITE, ST7735_BLACK, 1); // language
+        ST7735_DrawString(3, 9, (Phrases[1][3]), ST7735_BLACK, ST7735_YELLOW, 1); // language
+    }
+
+
+}
 
 void Game_Init() {
   player.push(PLAYER_X >> 8, PLAYER_Y >> 8, 0, 0, 0); // initialize player
@@ -239,7 +259,9 @@ int main(void){ // final main
     // initialize interrupts on TimerG12 at 30 Hz
   TimerG12_IntArm(80000000/30,2);
   // initialize all data structures
-  Game_Init();
+  //Game_Init();
+  Welcome_Screen();
+  language = 1;
   __enable_irq();
   while(1){
 
@@ -253,12 +275,24 @@ int main(void){ // final main
        // update ST7735R
     // check for end game or level switch
       if(refresh != 0){
-          ST7735_SetCursor(0,0);
-          ST7735_FillScreen(ST7735_BLACK);
-          printf("x: %d\n", ADC0_xpos);
-          printf("y: %d\n", ADC0_ypos);
-          printf("Distance: %d.%03dcm\n", (slidepot_distance/1000)%10,slidepot_distance%1000);
-          refresh = 0;
+          if(welcome_screen){
+              if((ADC0_ypos > 2500) && (language == 1)){
+                  language = 0;
+                  Welcome_Screen();
+              }else if((ADC0_ypos < 2000) && (language == 0)){
+                  language = 1;
+                  Welcome_Screen();
+              }
+          }
+
+          //ST7735_SetCursor(0,0);
+          //ST7735_FillScreen(ST7735_BLACK);
+          //ST7735_FillRect(0, 0, 180, 20, ST7735_BLACK);
+          //printf("x: %d\n", ADC0_xpos);
+          //printf("y: %d\n", ADC0_ypos);
+          //printf("Distance: %d.%03dcm\n", (slidepot_distance/1000)%10,slidepot_distance%1000);
+
+         refresh = 0;
       }
   }
 }
