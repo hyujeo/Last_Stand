@@ -104,8 +104,8 @@ void TIMG12_IRQHandler(void){
             refresh_menu = true;
             language = 0;
         }
-        if (joystick_y < 1000 && language == 0){
-            Sound_Menu_Selection();
+        if (joystick_y < 2000 && language == 0 && joystick_y > 0){
+            //Sound_Menu_Selection();
             language = 1;
             refresh_menu = true;
         }
@@ -206,7 +206,6 @@ void Game_Init() {
 }
 
 void Menu_Screen_Init() {
-    ST7735_FillScreen(ST7735_BLACK);
     ST7735_DrawString(1, 2, (Phrases[language][0]), ST7735_RED, ST7735_BLACK, 1); // title
     ST7735_DrawString(1, 6, (Phrases[language][2]), ST7735_GREEN, ST7735_BLACK, 1); // language header
     ST7735_DrawString(1, 12, (Phrases[language][1]), ST7735_WHITE, ST7735_BLACK, 1); // directions
@@ -223,9 +222,9 @@ void Menu_Screen_Init() {
 }
 
 void Menu_Screen_Update() {
-    ST7735_SetCursor(0,0);
-    printf("%05d\n", joystick_y);
-    return; // nothing for now
+    ST7735_FillRect(6, 20, 102, 8, ST7735_BLACK); // title
+    ST7735_FillRect(14, 78, 50, 32, ST7735_BLACK); // english spanish
+    Menu_Screen_Init();
 }
 
 void Play_Screen_Init() {
@@ -242,7 +241,6 @@ void Play_Screen_Update() {
 }
 
 void Score_Screen_Init() {
-    ST7735_FillScreen(ST7735_BLACK);
     ST7735_DrawString(5, 2, (Phrases[language][4]), ST7735_RED, ST7735_BLACK, 1); // game over header
     ST7735_SetCursor(6,7);
     printf("%s: %d", (Phrases[language][5]), score);
@@ -259,7 +257,16 @@ void Score_Screen_Init() {
 }
 
 void Score_Screen_Update() {
-    return; // nothing for now
+    ST7735_FillRect(28, 98, 46, 32, ST7735_BLACK);
+    if(score_screen_selection == 0){
+        ST7735_FillRect(28, 98, 46, 12, ST7735_WHITE);
+        ST7735_DrawString(5, 10, (Phrases[language][6]), ST7735_BLACK, ST7735_WHITE, 1); // restart
+        ST7735_DrawString(5, 12, Menu_English, ST7735_WHITE, ST7735_BLACK, 1); // menu
+    }else{
+        ST7735_FillRect(28, 118, 32, 12, ST7735_WHITE);
+        ST7735_DrawString(5, 10, (Phrases[language][6]), ST7735_WHITE, ST7735_BLACK, 1); // restart
+        ST7735_DrawString(5, 12, Menu_English, ST7735_BLACK, ST7735_WHITE, 1); // menu
+    }
 }
 
 // ALL ST7735 OUTPUT MUST OCCUR IN MAIN
@@ -290,12 +297,14 @@ int main(void){ // final main
             //ST7735_FillScreen(ST7735_BLACK);
             // Menu screen
             case 0:
-                if (previous_screen != current_screen || refresh_menu){
+                if (previous_screen != current_screen){
                     previous_screen = current_screen;
-                    refresh_menu = false;
+                    ST7735_FillScreen(ST7735_BLACK);
                     Menu_Screen_Init();
+                }else if(refresh_menu){
+                    Menu_Screen_Update();
+                    refresh_menu = false;
                 }
-                Menu_Screen_Update();
                 break;
 
             // Play screen
@@ -309,12 +318,13 @@ int main(void){ // final main
 
             // Score screen
             case 2:
-                if (previous_screen != current_screen || refresh_score){
-                        previous_screen = current_screen;
-                        refresh_score = false;
-                        Score_Screen_Init();
-                    }
-                Score_Screen_Update();
+                if (previous_screen != current_screen){
+                    previous_screen = current_screen;
+                    Score_Screen_Init();
+                }else if(refresh_score){
+                    Score_Screen_Update();
+                    refresh_score = false;
+                }
                 break;
             }
 
