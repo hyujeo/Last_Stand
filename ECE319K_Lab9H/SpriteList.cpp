@@ -125,19 +125,37 @@ void SpriteList::removeFromList(Sprite* s, Sprite* prev) {
     s->next = spritePool.head;
     spritePool.head = s;
 }
-void SpriteList::update() {
+
+void SpriteList::update(BackgroundList* garbageCollector) {
     Sprite* s = head;
-    while(head){
+    while(s){
         switch (s->img){
-        case 2: break; // TODO
+        case ALIEN_1_ID:
+            int current_x = (s->x>>8);
+            int current_y = (s->y>>8);
+            int difference_x = 128 - current_x;
+            int difference_y = 128 - current_y;
+            if(difference_x < 0){ // right side of screen
+                s->x = (current_x-1)<<8;
+            }else if(difference_x > 0){
+                s->x = (current_x+1)<<8;
+            }
+            if(difference_y < 0){
+                s->y = (current_y-1)<<8;
+            }else if(difference_y > 0){
+                s->y = (current_y+1)<<8;
+            }
+            //garbageCollector->push(current_x, current_y, ALIEN_1_ID);
+            break;
         }
+        s = s->next;
     }
 }
 
 void BackgroundList::init(int _size) {
     size = _size;
     length = 0;
-    array = new Background[5];
+    array = new Background[_size];
 }
 
 void BackgroundList::push(int xPos, int yPos, int img) {
