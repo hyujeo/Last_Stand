@@ -233,9 +233,14 @@ void Play_Screen_Init() {
     ST7735_SetCursor(6,1);
     printf("%s: %d", (Phrases[language][5]), score);
     player.draw();
+    // lives displayed at bottom
     ST7735_DrawBitmap(68, 155, player_on, 19, 14);
     ST7735_DrawBitmap(88, 155, player_on, 19, 14);
     ST7735_DrawBitmap(108, 155, player_on, 19, 14);
+    // The location that powerups would be once they get picked up
+    ST7735_DrawBitmap(5, 155, powerup, 15, 15);
+    ST7735_DrawBitmap(25, 155, powerup, 15, 15);
+    ST7735_DrawBitmap(45, 155, powerup, 15, 15);
 }
 
 void Play_Screen_Update() {
@@ -247,7 +252,7 @@ void Play_Screen_Update() {
 }
 
 void Score_Screen_Init() {
-    ST7735_FillRect(34, 10, 50, 8, ST7735_BLACK); // remove old score header
+    ST7735_FillRect(34, 10, 60, 8, ST7735_BLACK); // remove old score header
     ST7735_DrawString(5, 2, (Phrases[language][4]), ST7735_RED, ST7735_BLACK, 1); // game over header
     ST7735_SetCursor(6,7);
     printf("%s: %d", (Phrases[language][5]), score);
