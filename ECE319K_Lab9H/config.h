@@ -66,8 +66,13 @@
 #define PLAYER_EXPLOSION_3_ID 18
 #define PLAYER_EXPLOSION_4_ID 19
 
-// increase friction to decrease max speed
-#define FRICTION 11
+// player friction
+#define FRICTION 0.05
+// ratio of playerspeed : backgroundspeed
+#define BACKGROUND_RELATIVE_SPEED 4
+//speeds
+#define PLAYER_LASER_SPEED 0.5
+#define ALIEN_LASER_SPEED 0.5
 
 // player coordinates in 256x256, with << 8 to fit Sprite standards
 // adjust player location on screen

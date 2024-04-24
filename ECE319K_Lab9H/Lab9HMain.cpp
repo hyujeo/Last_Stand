@@ -86,7 +86,9 @@ void TIMG12_IRQHandler(void){
     // 2) sample ADC, read input switches
     slidepot = Sensor.In();
     JoyStick_In(&ADC0_x, &ADC0_y);
-    joystick_x = 2048 - ADC0_x;
+
+    slidepot = (slidepot + 300) >> 10;  // 0 to 4
+    joystick_x = ADC0_x - 2048;
     joystick_y = ADC0_y - 2048;
 
     uint8_t all_switches = Switches.All_Switch_In();
@@ -110,7 +112,6 @@ void TIMG12_IRQHandler(void){
             language = 0;
         }
         if (joystick_y < -1000 && language == 0){
-
             Sound_Menu_Selection();
             language = 1;
             refresh_menu = true;
@@ -119,14 +120,20 @@ void TIMG12_IRQHandler(void){
 
     // Play screen
     case 1:
+        if (joystick_x > 1000 || joystick_y > 1000 || joystick_x < -1000 || joystick_y < -1000){
+            player.head->img = PLAYER_ON_ID;
+        } else {
+            player.head->img = PLAYER_OFF_ID;
+        }
         Update_Player_Speed(joystick_x, joystick_y, slidepot);
         // down button is shoot
         if (down && !prev_down){
             Sound_Shoot();
             prev_down = true;
-            //playerLasers.push(PLAYER_X >> 8, PLAYER_Y >> 8, joystick_x, joystick_y, PLAYER_LASER_ID);
+            extern int backVX;
+            extern int backVY;
+            playerLasers.push(PLAYER_X>>8, PLAYER_Y>>8, -backVX*PLAYER_LASER_SPEED, -backVY*PLAYER_LASER_SPEED, PLAYER_LASER_ID);
         }
-
         // TODO REMOVE UP BUTTON TO NAVIGATE TO SCORE
         if (up && !prev_up){
             current_screen = 2;
@@ -161,6 +168,10 @@ void TIMG12_IRQHandler(void){
     }
 
     // 4) move and update sprites
+    backgrounds.update();
+    playerLasers.update();
+    alienLasers.update();
+    aliens.update();
 
 
     // 5) set semaphore and update 'prev' values
@@ -207,7 +218,7 @@ void Game_Init() {
         int img;
         if (Random(10)) img = STAR_SMALL_ID;
         else img = STAR_BIG_ID;
-        backgrounds.push(Random(256), Random(256), img);
+        backgrounds.push(Random(256) << 8, Random(256) << 8, img);
     }
 }
 
@@ -251,6 +262,8 @@ void Play_Screen_Init() {
 void Play_Screen_Update() {
     blackRectangles.draw('B'); // 'B' to draw simploy black rectangles
     backgrounds.draw('I'); // 'I' to draw the actual image
+    blackRectangles.length = 0;
+    player.draw();
     aliens.draw();
     alienLasers.draw();
     playerLasers.draw();
