@@ -94,7 +94,9 @@ void TIMG12_IRQHandler(void){
     // 2) sample ADC, read input switches
     slidepot = Sensor.In();
     JoyStick_In(&ADC0_x, &ADC0_y);
-    joystick_x = 2048 - ADC0_x;
+
+    slidepot = (slidepot + 300) >> 10;  // 0 to 4
+    joystick_x = ADC0_x - 2048;
     joystick_y = ADC0_y - 2048;
 
     uint8_t all_switches = Switches.All_Switch_In();
@@ -123,6 +125,7 @@ void TIMG12_IRQHandler(void){
             refresh_menu = true;
             language = 0;
         }
+
         if (joystick_y < -1000 && language == 0 && joystick_y > -2048){
             Sound_Menu_Selection();
             language = 1;
@@ -132,6 +135,12 @@ void TIMG12_IRQHandler(void){
 
     // Play screen
     case 1:
+
+        if (joystick_x > 1000 || joystick_y > 1000 || joystick_x < -1000 || joystick_y < -1000){
+            player.head->img = PLAYER_ON_ID;
+        } else {
+            player.head->img = PLAYER_OFF_ID;
+  /*
         time_elapsed++;
         if((time_elapsed%3) != 0 && created && !death_animation){
             aliens.update(&blackRectangles);
@@ -144,13 +153,18 @@ void TIMG12_IRQHandler(void){
         if(time_elapsed >= 30){
             seconds_elapsed++;
             time_elapsed = 0;
+ */
         }
         Update_Player_Speed(joystick_x, joystick_y, slidepot);
         // down button is shoot
         if (down && !prev_down && !death_animation){
             Sound_Shoot();
             prev_down = true;
-            playerLasers.push(PLAYER_X >> 8, PLAYER_Y >> 8, joystick_x, joystick_y, PLAYER_LASER_ID);
+
+            extern int backVX;
+            extern int backVY;
+            playerLasers.push(PLAYER_X>>8, PLAYER_Y>>8, -backVX*PLAYER_LASER_SPEED, -backVY*PLAYER_LASER_SPEED, PLAYER_LASER_ID);
+// HERE ON MAIN
         }
         if(((seconds_elapsed%10) == 2) && !death_animation && (alien_count < max_alien_count)){ // create new alien every n seconds
             created = true;
@@ -186,7 +200,7 @@ void TIMG12_IRQHandler(void){
 
             multiply = false;
         }
-
+// MAIN DONE
         // TODO REMOVE UP BUTTON TO NAVIGATE TO SCORE
         if (up && !prev_up){
             current_screen = 2;
@@ -227,6 +241,10 @@ void TIMG12_IRQHandler(void){
     }
 
     // 4) move and update sprites
+    backgrounds.update();
+    playerLasers.update();
+    alienLasers.update();
+    aliens.update();
 
 
     // 5) set semaphore and update 'prev' values
@@ -275,7 +293,7 @@ void Game_Init() {
         int img;
         if (Random(10)) img = STAR_SMALL_ID;
         else img = STAR_BIG_ID;
-        backgrounds.push(Random(256), Random(256), img);
+        backgrounds.push(Random(256) << 8, Random(256) << 8, img);
     }
 }
 
@@ -319,6 +337,8 @@ void Play_Screen_Init() {
 void Play_Screen_Update() {
     blackRectangles.draw('B'); // 'B' to draw simploy black rectangles
     backgrounds.draw('I'); // 'I' to draw the actual image
+    blackRectangles.length = 0;
+    player.draw();
     aliens.draw();
     alienLasers.draw();
     playerLasers.draw();

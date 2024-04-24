@@ -17,14 +17,12 @@ static SpriteList spritePool;
 
 extern BackgroundList blackRectangles;
 
-short playerVX = 0;
-short playerVY = 0;
-int playerAX = 0;
-int playerAY = 0;
-int accelerationFactor = 0;
+int backVX = 0;
+int backVY = 0;
 
 void Update_Player_Speed(int joy_x, int joy_y, int factor) {
-    // TODO
+    backVX += (factor * joy_x / 128) - (backVX * FRICTION);
+    backVY += (factor * joy_y / 128) - (backVY * FRICTION);
 }
 Image spriteImages[] = {
     {player_off, 19, 14}, // 0
@@ -117,64 +115,75 @@ void SpriteList::draw() {
   }
 }
 void SpriteList::removeFromList(Sprite* s, Sprite* prev) {
-    if (prev){
-        prev->next = s->next;
-    } else {
-        head = s->next;
-    }
+    if (s == head) head = s->next;
+    prev->next = s->next;
     s->next = spritePool.head;
     spritePool.head = s;
 }
 
-void SpriteList::update(BackgroundList* garbageCollector) {
+void SpriteList::update() {
     Sprite* s = head;
+    Sprite temp = {0,0,0,0,0};
+    Sprite* prev = &temp;
+    prev->next = s;
+    int xpos, ypos;
     while(s){
+        blackRectangles.push(s->x, s->y, s->img);
+        s->x += s->vx + backVX;
+        s->y += s->vy + backVY;
         switch (s->img){
-        case ALIEN_1_ID:
-            int current_x = (s->x>>8);
-            int current_y = (s->y>>8);
-            int difference_x = 128 - current_x;
-            int difference_y = 128 - current_y;
-            if(difference_x < 0){ // right side of screen
-                s->x = (current_x-1)<<8;
-            }else if(difference_x > 0){
-                s->x = (current_x+1)<<8;
-            }
-            if(difference_y < 0){
-                s->y = (current_y-1)<<8;
-            }else if(difference_y > 0){
-                s->y = (current_y+1)<<8;
-            }
-            //garbageCollector->push(current_x, current_y, ALIEN_1_ID);
+        // Lasers: remove when going out of bounds, instead of wrapping around
+        case PLAYER_LASER_ID: case ALIEN_LASER_ID:
+            // player screen's boundary is 64<x<192, 48<y<208
+            xpos = s->x >> 8;
+            ypos = s->y >> 8;
+            if (xpos < 64-15 || xpos > 192+15 || ypos < 48-15 || ypos > 208+15){
+                removeFromList(s, prev);
+                s = prev;
+            } 
             break;
-        }
+        default: break;
+        } 
+        // all sprites must change speed based on player speed
+        prev = s;
         s = s->next;
     }
 }
 
+
+
+
 void BackgroundList::init(int _size) {
     size = _size;
     length = 0;
-    array = new Background[_size];
+    array = new Background[size];
 }
 
-void BackgroundList::push(int xPos, int yPos, int img) {
+void BackgroundList::push(int x, int y, int img) {
     if (length >= size) return;
-    array[length].x = xPos << 8;
-    array[length].y = yPos << 8;
+    array[length].x = x;
+    array[length].y = y;
     array[length].img = img;
     length++;
+}
+
+void BackgroundList::update() {
+    for (int i = 0; i < MAX_BACKGROUND; i++){
+        blackRectangles.push(array[i].x, array[i].y, array[i].img);
+        array[i].x += backVX / BACKGROUND_RELATIVE_SPEED;
+        array[i].y += backVY / BACKGROUND_RELATIVE_SPEED;
+    }
 }
 
 void BackgroundList::draw(char mode) {
     for (int i = 0; i < length; i++){
         Background b = array[i];
-        signed char xPix = (b.x >> 8) - 64;
-        signed char yPix = (b.y >> 8) - 48;
-        short width = spriteImages[b.img].width;
-        short height = spriteImages[b.img].height;
+        int xPix = (b.x >> 8) - 64;
+        int yPix = (b.y >> 8) - 48;
+        int width = spriteImages[b.img].width;
+        int height = spriteImages[b.img].height;
         if (mode == 'B'){
-            ST7735_FillRect(xPix - (width >> 1), yPix + (height >> 1), width, height, ST7735_BLACK);
+            ST7735_FillRect(xPix - (width >> 1), yPix - (height >> 1), width, height + 1, ST7735_BLACK);
         } else if (mode == 'I'){
             ST7735_DrawBitmap(xPix - (width >> 1), yPix + (height >> 1), spriteImages[b.img].array, width, height);
         }
