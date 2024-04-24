@@ -75,18 +75,18 @@ int SpriteList::collides(Sprite* s) { // to check for player collision, do: enem
     while(enemy){
         int dx = s->x - enemy->x;
         int dy = s->y - enemy->y;
-        int r = spriteImages[s->img].width + spriteImages[enemy->img].width;
+        int r = (spriteImages[s->img].width + spriteImages[enemy->img].width) << 7;
         if (dx*dx + dy*dy < r*(r + HITBOX)){ // collided
             switch (enemy->img){
             case ALIEN_LASER_ID: case PLAYER_LASER_ID:
                 removeFromList(enemy, prev);
                 enemy = prev;
-                break;
+                return 1;
             case ALIEN_1_ID:
                 enemy->img = ALIEN_1_EXPLOSION_1_ID;
-                break;
+                enemy->counter = 0;
+                return 1;
             }
-            return 1;
         }
         enemy = enemy->next;
     }
@@ -103,12 +103,12 @@ int SpriteList::detectCollisions(SpriteList& enemies) {
             case ALIEN_LASER_ID: case PLAYER_LASER_ID:
                 removeFromList(s, prev);
                 s = prev;
-                break;
+                return 1;
             case ALIEN_1_ID:
                 s->img = ALIEN_1_EXPLOSION_1_ID;
-                break;
+                s->counter = 0;
+                return 1;
             }
-            return 1;
         }
         s = s->next;
     }
@@ -166,6 +166,19 @@ void SpriteList::update() {
                 s = prev;
             } 
             break;
+        case ALIEN_1_EXPLOSION_1_ID ... ALIEN_1_EXPLOSION_3_ID:
+            s->counter++;
+            if (s->counter == 7){
+                s->counter = 0;
+                s->img++;
+            }
+            break;
+        case ALIEN_1_EXPLOSION_4_ID:
+            s->counter++;
+            if (s->counter == 7){
+                removeFromList(s, prev);
+                s = prev;
+            }
         default: break;
         } 
         // all sprites must change speed based on player speed
