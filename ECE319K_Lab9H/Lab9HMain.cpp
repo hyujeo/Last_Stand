@@ -97,6 +97,7 @@ void TIMG12_IRQHandler(void){
     case 0:
         // any button on menu screen => game start
         if (all_switches && !prev_up && !prev_down && !prev_left && !prev_right){
+            Sound_Ufo_Highpitch_Menu();
             current_screen = 1;
         }
         if (joystick_y > 3000 && language == 1){
@@ -105,7 +106,7 @@ void TIMG12_IRQHandler(void){
             language = 0;
         }
         if (joystick_y < 2000 && language == 0 && joystick_y > 0){
-            //Sound_Menu_Selection();
+            Sound_Menu_Selection();
             language = 1;
             refresh_menu = true;
         }
@@ -118,7 +119,7 @@ void TIMG12_IRQHandler(void){
         if (down && !prev_down){
             Sound_Shoot();
             prev_down = true;
-            playerLasers.push(PLAYER_X >> 8, PLAYER_Y >> 8, joystick_x, joystick_y, PLAYER_LASER_ID);
+            //playerLasers.push(PLAYER_X >> 8, PLAYER_Y >> 8, joystick_x, joystick_y, PLAYER_LASER_ID);
         }
 
         // TODO REMOVE UP BUTTON TO NAVIGATE TO SCORE
@@ -229,7 +230,12 @@ void Menu_Screen_Update() {
 
 void Play_Screen_Init() {
     ST7735_FillScreen(ST7735_BLACK);
+    ST7735_SetCursor(6,1);
+    printf("%s: %d", (Phrases[language][5]), score);
     player.draw();
+    ST7735_DrawBitmap(68, 155, player_on, 19, 14);
+    ST7735_DrawBitmap(88, 155, player_on, 19, 14);
+    ST7735_DrawBitmap(108, 155, player_on, 19, 14);
 }
 
 void Play_Screen_Update() {
@@ -241,6 +247,7 @@ void Play_Screen_Update() {
 }
 
 void Score_Screen_Init() {
+    ST7735_FillRect(34, 10, 50, 8, ST7735_BLACK); // remove old score header
     ST7735_DrawString(5, 2, (Phrases[language][4]), ST7735_RED, ST7735_BLACK, 1); // game over header
     ST7735_SetCursor(6,7);
     printf("%s: %d", (Phrases[language][5]), score);
