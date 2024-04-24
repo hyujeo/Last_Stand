@@ -234,7 +234,7 @@ const char Language_English[]="English";
 const char Language_Spanish[]="Espa\xA4ol";
 
 const char GameOver_English[] = "Game Over";
-const char GameOver_Spanish[] = "Terminaste";
+const char GameOver_Spanish[] = "Perdiste La Vida";
 const char Score_English[]="Score";
 const char Score_Spanish[]="Puntos";
 const char Restart_English[]="Restart";
@@ -330,7 +330,7 @@ void Play_Screen_Update() {
 
 void Score_Screen_Init() {
     ST7735_FillRect(34, 10, 60, 8, ST7735_BLACK); // remove old score header
-    ST7735_DrawString(5, 2, (Phrases[language][4]), ST7735_RED, ST7735_BLACK, 1); // game over header
+    ST7735_DrawString(4, 2, (Phrases[language][4]), ST7735_RED, ST7735_BLACK, 1); // game over header
     ST7735_SetCursor(6,7);
     printf("%s: %d", (Phrases[language][5]), score);
 
