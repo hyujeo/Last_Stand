@@ -178,7 +178,12 @@ void TIMG12_IRQHandler(void){
         }
         if((seconds_elapsed%10 == 3) && multiply){
             alien_count = 0;
-            max_alien_count*=2;
+            if(aliens.random_seed){
+                max_alien_count+=2;
+            }else{
+                max_alien_count++;
+            }
+
             multiply = false;
         }
 
