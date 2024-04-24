@@ -120,7 +120,7 @@ void SpriteList::removeFromList(Sprite* s, Sprite* prev) {
     s->next = spritePool.head;
     spritePool.head = s;
 }
-#include <stdio.h>
+
 void SpriteList::update() {
     Sprite* s = head;
     Sprite temp = {0,0,0,0,0};

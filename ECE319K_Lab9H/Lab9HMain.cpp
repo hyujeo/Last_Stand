@@ -55,7 +55,7 @@ BackgroundList blackRectangles; // sprites that got removed. for printing black 
 Input_Switch_Handler Switches;
 
 int score = 0;
-int shield = 0;
+int shield = 3;
 
 uint32_t ADC0_x;
 uint32_t ADC0_y;
@@ -72,8 +72,17 @@ int language = 0; // 0 is english, 1 is spanish
 int score_screen_selection = 0;
 int current_screen = 0; // 0: start, 1: play; 2: score
 int previous_screen = -1;
+int time_elapsed = 0;
+int seconds_elapsed = 0;
+bool created = false;
+bool death_animation = false;
+bool executed = false;
+bool multiply = false;
+int alien_count = 0;
+int max_alien_count = 1;
 
 // games  engine runs at 30Hz
+
 void TIMG12_IRQHandler(void){
     if((TIMG12->CPU_INT.IIDX) == 1){ // this will acknowledge
         GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
@@ -81,7 +90,6 @@ void TIMG12_IRQHandler(void){
 
 
     // 1) increment random number to randomize game
-    Random32();
 
     // 2) sample ADC, read input switches
     slidepot = Sensor.In();
@@ -96,7 +104,7 @@ void TIMG12_IRQHandler(void){
     uint8_t down  = Switches.DOWN_Switch_In();
     uint8_t right = Switches.RIGHT_Switch_In();
     uint8_t left  = Switches.LEFT_Switch_In();
-    
+
     // 3) handle inputs
     switch (current_screen){
     // Menu screen
@@ -105,13 +113,20 @@ void TIMG12_IRQHandler(void){
         if (all_switches && !prev_up && !prev_down && !prev_left && !prev_right){
             Sound_Ufo_Highpitch_Menu();
             current_screen = 1;
+            shield = 3;
+            score = 0;
+            time_elapsed = 0;
+            seconds_elapsed = 0;
+            alien_count = 0;
+            max_alien_count = 1;
         }
         if (joystick_y > 1000 && language == 1){
             Sound_Menu_Selection();
             refresh_menu = true;
             language = 0;
         }
-        if (joystick_y < -1000 && language == 0){
+
+        if (joystick_y < -1000 && language == 0 && joystick_y > -2048){
             Sound_Menu_Selection();
             language = 1;
             refresh_menu = true;
@@ -120,20 +135,72 @@ void TIMG12_IRQHandler(void){
 
     // Play screen
     case 1:
+
         if (joystick_x > 1000 || joystick_y > 1000 || joystick_x < -1000 || joystick_y < -1000){
             player.head->img = PLAYER_ON_ID;
         } else {
             player.head->img = PLAYER_OFF_ID;
+  /*
+        time_elapsed++;
+        if((time_elapsed%3) != 0 && created && !death_animation){
+            aliens.update(&blackRectangles);
+            if(aliens.detectCollisions(player)){
+                Sound_Explosion();
+                shield--;
+                death_animation = true;
+            }
+        }
+        if(time_elapsed >= 30){
+            seconds_elapsed++;
+            time_elapsed = 0;
+ */
         }
         Update_Player_Speed(joystick_x, joystick_y, slidepot);
         // down button is shoot
-        if (down && !prev_down){
+        if (down && !prev_down && !death_animation){
             Sound_Shoot();
             prev_down = true;
+
             extern int backVX;
             extern int backVY;
             playerLasers.push(PLAYER_X>>8, PLAYER_Y>>8, -backVX*PLAYER_LASER_SPEED, -backVY*PLAYER_LASER_SPEED, PLAYER_LASER_ID);
+// HERE ON MAIN
         }
+        if(((seconds_elapsed%10) == 2) && !death_animation && (alien_count < max_alien_count)){ // create new alien every n seconds
+            created = true;
+            multiply = true;
+            uint32_t rand_x = (aliens.random_seed%256);
+            if(rand_x > 90 && rand_x < 140){
+                if(rand_x < 110){
+                    rand_x = 90;
+                }else{
+                    rand_x = 200;
+                }
+            }
+            uint32_t num = Random32();
+            aliens.random_seed = Random(num);
+            uint32_t rand_y = (aliens.random_seed%256);
+            if(rand_y > 70 && rand_y < 140){
+                if(rand_y < 90){
+                    rand_y = 70;
+                }else{
+                    rand_y = 200;
+                }
+            }
+            aliens.push(rand_x, rand_y, 1, 1, ALIEN_1_ID);
+            alien_count++;
+        }
+        if((seconds_elapsed%10 == 3) && multiply){
+            alien_count = 0;
+            if(aliens.random_seed){
+                max_alien_count+=2;
+            }else{
+                max_alien_count++;
+            }
+
+            multiply = false;
+        }
+// MAIN DONE
         // TODO REMOVE UP BUTTON TO NAVIGATE TO SCORE
         if (up && !prev_up){
             current_screen = 2;
@@ -146,10 +213,16 @@ void TIMG12_IRQHandler(void){
         // go back to menu (selection=1) or replay (selection=0)
         if (all_switches && !prev_up && !prev_down && !prev_left && !prev_right){
             Sound_Ufo_Highpitch_Menu();
-            if (score_screen_selection == 0){
-                current_screen = 1;
-            } else {
+            if (score_screen_selection == 1){
                 current_screen = 0;
+            } else {
+                current_screen = 1;
+                shield = 3;
+                score = 0;
+                time_elapsed = 0;
+                seconds_elapsed = 0;
+                alien_count = 0;
+                max_alien_count = 1;
             }
         }
         // joystick_y to select from score screen
@@ -198,15 +271,17 @@ const char Language_English[]="English";
 const char Language_Spanish[]="Espa\xA4ol";
 
 const char GameOver_English[] = "Game Over";
-const char GameOver_Spanish[] = "Terminaste";
+const char GameOver_Spanish[] = "Perdiste La Vida";
 const char Score_English[]="Score";
 const char Score_Spanish[]="Puntos";
 const char Restart_English[]="Restart";
 const char Restart_Spanish[]="Otra";
+const char Time_English[]="Time";
+const char Time_Spanish[]="Tiempo";
 const char Menu_English[]="Menu"; // same in spanish lol
-const char *Phrases[2][7]={
-  {Title_English, Directions_English, Sel_Language_English, Language_English, GameOver_English, Score_English, Restart_English}, // row 1 English
-  {Title_Spanish, Directions_Spanish, Sel_Language_Spanish, Language_Spanish, GameOver_Spanish, Score_Spanish, Restart_Spanish}, // row 2 Spanish
+const char *Phrases[2][8]={
+  {Title_English, Directions_English, Sel_Language_English, Language_English, GameOver_English, Score_English, Restart_English, Time_English}, // row 1 English
+  {Title_Spanish, Directions_Spanish, Sel_Language_Spanish, Language_Spanish, GameOver_Spanish, Score_Spanish, Restart_Spanish, Time_Spanish}, // row 2 Spanish
 };
 
 void Game_Init() {
@@ -254,9 +329,9 @@ void Play_Screen_Init() {
     ST7735_DrawBitmap(88, 155, player_on, 19, 14);
     ST7735_DrawBitmap(108, 155, player_on, 19, 14);
     // The location that powerups would be once they get picked up
-    ST7735_DrawBitmap(5, 155, powerup, 15, 15);
-    ST7735_DrawBitmap(25, 155, powerup, 15, 15);
-    ST7735_DrawBitmap(45, 155, powerup, 15, 15);
+//    ST7735_DrawBitmap(5, 155, powerup, 15, 15);
+//    ST7735_DrawBitmap(25, 155, powerup, 15, 15);
+//    ST7735_DrawBitmap(45, 155, powerup, 15, 15);
 }
 
 void Play_Screen_Update() {
@@ -267,11 +342,34 @@ void Play_Screen_Update() {
     aliens.draw();
     alienLasers.draw();
     playerLasers.draw();
+    ST7735_SetCursor(0,0);
+    printf("%s: %d", (Phrases[language][7]), seconds_elapsed);
+    ST7735_SetCursor(6,1);
+    printf("%s: %d", (Phrases[language][5]), score);
+
+    if(death_animation){
+        int why = 0;
+    }
+    if(shield <= 2){
+        ST7735_DrawBitmap(68, 155, player_explosion_4, 19, 14);
+    }else{
+        ST7735_DrawBitmap(68, 155, player_on, 19, 14);
+    }
+    if(shield <= 1){
+        ST7735_DrawBitmap(88, 155, player_explosion_4, 19, 14);
+    }else{
+        ST7735_DrawBitmap(88, 155, player_on, 19, 14);
+    }
+    if(shield <= 0){
+        ST7735_DrawBitmap(108, 155, player_explosion_4, 19, 14);
+    }else{
+        ST7735_DrawBitmap(108, 155, player_on, 19, 14);
+    }
 }
 
 void Score_Screen_Init() {
     ST7735_FillRect(34, 10, 60, 8, ST7735_BLACK); // remove old score header
-    ST7735_DrawString(5, 2, (Phrases[language][4]), ST7735_RED, ST7735_BLACK, 1); // game over header
+    ST7735_DrawString(4, 2, (Phrases[language][4]), ST7735_RED, ST7735_BLACK, 1); // game over header
     ST7735_SetCursor(6,7);
     printf("%s: %d", (Phrases[language][5]), score);
 
@@ -313,6 +411,7 @@ int main(void){ // final main
     JoyStick_Init(); // initialize joy stick
     // initialize interrupts on TimerG12 at 30 Hz
     TimerG12_IntArm(80000000/30,2);
+    //TimerG8_IntArm(5000, 8000, 0); // every second it triggers
     // initialize all data structures
     Menu_Screen_Update();
     Game_Init();
@@ -344,6 +443,27 @@ int main(void){ // final main
                     Play_Screen_Init();
                 }
                 Play_Screen_Update();
+                if(death_animation){
+                    int saved_seconds = seconds_elapsed;
+                    time_elapsed = 0;
+                    seconds_elapsed = 0;
+                    ST7735_DrawBitmap(55, 87, player_explosion_1, 19, 14);
+                    while(time_elapsed<=7){}
+                    ST7735_DrawBitmap(55, 87, player_explosion_2, 19, 14);
+                    while(time_elapsed<=14){}
+                    ST7735_DrawBitmap(55, 87, player_explosion_3, 19, 14);
+                    while(time_elapsed<=24){}
+                    ST7735_DrawBitmap(55, 87, player_explosion_4, 19, 14);
+                    while(seconds_elapsed!=3){}
+                    death_animation = false;
+                    seconds_elapsed = saved_seconds;
+                    time_elapsed = 0;
+                }
+                if(shield <= 0){
+                    current_screen = 2;
+                }else{
+                    player.draw();
+                }
                 break;
 
             // Score screen
@@ -361,7 +481,7 @@ int main(void){ // final main
             //ST7735_SetCursor(0,0);
             //ST7735_FillScreen(ST7735_BLACK);
             //ST7735_FillRect(0, 0, 180, 20, ST7735_BLACK);
-            //printf("x: %d\n", ADC0_xpos);
+            //printf("Time: %d", seconds_elapsed);
             //printf("y: %d\n", joystick_y);
             //printf("Distance: %d.%03dcm\n", (slidepot_distance/1000)%10,slidepot_distance%1000);
 

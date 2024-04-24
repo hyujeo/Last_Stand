@@ -15,9 +15,22 @@ bool Player::update()
 
 void Update_Player_Speed(int joy_x, int joy_y, int factor);
 
+class BackgroundList {
+    // update position according to player speed
+public:
+    int size = 0;
+    int length = 0;
+    Background* array;
+    void init(int size);
+    void push(int xPos, int yPos, int img);
+    void update();
+    void draw(char mode);
+};
+
 class SpriteList {
 public:
     Sprite* head = 0;
+    uint32_t random_seed = 0;
 
     // allocate to the spritePool
     static void Init(int size);
@@ -45,7 +58,7 @@ public:
     // change sprite speed according to sprite movement logic and player speed
     // incrememt counter if exploded image
     // remove sprite if counter > explosion duration
-    void update();
+    void update(BackgroundList* garbageCollector);
 
     void draw();
 
@@ -53,18 +66,6 @@ private:
 
     // remove s from list
     void removeFromList(Sprite* s, Sprite* prev);
-};
-
-class BackgroundList {
-    // update position according to player speed
-public:
-    int size = 0;
-    int length = 0;
-    Background* array;
-    void init(int size);
-    void push(int xPos, int yPos, int img);
-    void update();
-    void draw(char mode);
 };
 
 #endif // LAST_STAND_SPRITELIST_H
