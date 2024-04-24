@@ -107,6 +107,10 @@ void TIMG12_IRQHandler(void){
         if (all_switches && !prev_up && !prev_down && !prev_left && !prev_right){
             Sound_Ufo_Highpitch_Menu();
             current_screen = 1;
+            shield = 3;
+            score = 0;
+            time_elapsed = 0;
+            seconds_elapsed = 0;
         }
         if (joystick_y > 1000 && language == 1){
             Sound_Menu_Selection();
