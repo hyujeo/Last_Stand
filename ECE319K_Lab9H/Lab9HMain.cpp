@@ -57,8 +57,10 @@ Input_Switch_Handler Switches;
 int score = 0;
 int shield = 0;
 
-uint32_t joystick_x;
-uint32_t joystick_y;
+uint32_t ADC0_x;
+uint32_t ADC0_y;
+int joystick_x;
+int joystick_y;
 int32_t slidepot;
 uint32_t button_inputs;
 
@@ -83,7 +85,9 @@ void TIMG12_IRQHandler(void){
 
     // 2) sample ADC, read input switches
     slidepot = Sensor.In();
-    JoyStick_In(&joystick_x, &joystick_y);
+    JoyStick_In(&ADC0_x, &ADC0_y);
+    joystick_x = 2048 - ADC0_x;
+    joystick_y = ADC0_y - 2048;
 
     uint8_t all_switches = Switches.All_Switch_In();
     uint8_t up    = Switches.UP_Switch_In();
@@ -99,12 +103,12 @@ void TIMG12_IRQHandler(void){
         if (all_switches && !prev_up && !prev_down && !prev_left && !prev_right){
             current_screen = 1;
         }
-        if (joystick_y > 3000 && language == 1){
+        if (joystick_y > 1000 && language == 1){
             Sound_Menu_Selection();
             refresh_menu = true;
             language = 0;
         }
-        if (joystick_y < 1000 && language == 0){
+        if (joystick_y < -1000 && language == 0){
             Sound_Menu_Selection();
             language = 1;
             refresh_menu = true;
@@ -140,17 +144,16 @@ void TIMG12_IRQHandler(void){
             }
         }
         // joystick_y to select from score screen
-        if (joystick_y > 3000 && score_screen_selection == 1){
+        if (joystick_y > 1000 && score_screen_selection == 1){
             Sound_Menu_Selection();
             score_screen_selection = 0;
             refresh_score = true;
         }
-        if (joystick_y < 1000 && score_screen_selection == 0){
+        if (joystick_y < -1000 && score_screen_selection == 0){
             Sound_Menu_Selection();
             score_screen_selection = 1;
             refresh_score = true;
         }
-
         break;
     default: break; // never reached
     }
@@ -194,6 +197,7 @@ const char *Phrases[2][7]={
 };
 
 void Game_Init() {
+    SpriteList::Init(MAX_SPRITES);
     player.push(PLAYER_X >> 8, PLAYER_Y >> 8, 0, 0, 0); // initialize player
     backgrounds.init(MAX_BACKGROUND);
     blackRectangles.init(MAX_OBJECTS);

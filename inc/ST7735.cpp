@@ -983,13 +983,6 @@ void ST7735_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w, i
   if((x >= _width) || ((y - h + 1) >= _height) || ((x + w) <= 0) || (y < 0)){
     return;                             // image is totally off the screen, do nothing
   }
-  if((w > _width) || (h > _height)){    // image is too wide for the screen, do nothing
-    //***This isn't necessarily a fatal error, but it makes the
-    //following logic much more complicated, since you can have
-    //an image that exceeds multiple boundaries and needs to be
-    //clipped on more than one side.
-    return;
-  }
   if((x + w - 1) >= _width){            // image exceeds right of screen
     skipC = (x + w) - _width;           // skip cut off columns
     w = _width - x;
@@ -1025,56 +1018,41 @@ void ST7735_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w, i
   // deselect();
 }
 
-void ST7735_DrawBitmap2(int16_t x, int16_t y, const uint16_t *image, int16_t w, int16_t h){
-  int16_t skipC = 0;                      // non-zero if columns need to be skipped due to clipping
-  int16_t originalWidth = w;              // save this value; even if not all columns fit on the screen, the image is still this width in ROM
-  int i = w*(h - 1);
-
+void ST7735_DrawSprite(int16_t x, int16_t y, const uint16_t *image, int16_t w, int16_t h){
   if((x >= _width) || ((y - h + 1) >= _height) || ((x + w) <= 0) || (y < 0)){
-    return;                             // image is totally off the screen, do nothing
+    return;  // image is totally off the screen, do nothing
   }
-  if((w > _width) || (h > _height)){    // image is too wide for the screen, do nothing
-    //***This isn't necessarily a fatal error, but it makes the
-    //following logic much more complicated, since you can have
-    //an image that exceeds multiple boundaries and needs to be
-    //clipped on more than one side.
-    return;
-  }
-  if((x + w - 1) >= _width){            // image exceeds right of screen
-    skipC = (x + w) - _width;           // skip cut off columns
-    w = _width - x;
-  }
-  if((y - h + 1) < 0){                  // image exceeds top of screen
-    i = i - (h - y - 1)*originalWidth;  // skip the last cut off rows
-    h = y + 1;
-  }
-  if(x < 0){                            // image exceeds left of screen
-    w = w + x;
-    skipC = -1*x;                       // skip cut off columns
-    i = i - x;                          // skip the first cut off columns
-    x = 0;
-  }
-  if(y >= _height){                     // image exceeds bottom of screen
-    h = h - (y - _height + 1);
-    y = _height - 1;
-  }
-
-  setAddrWindow(x, y-h+1, x+w-1, y);
-
-  for(y=0; y<h; y=y+1){
-    for(x=0; x<w; x=x+1){
-      if (image[i]){ // only write if it's not 0x000000
-        // send the top 8 bits
-        SPI_OutData((uint8_t)(image[i] >> 8));
-        // send the bottom 8 bits
-        SPI_OutData((uint8_t)image[i]);
+  // faster version, doesnt work yet 
+  /*
+  for (int i = 0; i < h; i++){ // for each y
+    int left = 0;
+    while (left < w){
+      if (!image[left*i]){ // find a nonzero x
+        left++;
+        continue;
+      };
+      int right = left;
+      while (right < w){ // find the end of the nonzero array
+        if (image[right*i]){
+          right++;
+          continue;
+        }
+        break;
       }
-      // go to the next pixel
-      i = i + 1;
+      ST7735_DrawBitmap(x+left, y-i, &image[i*w + left], right-left, 1);
+      left = right;
     }
-    i = i + skipC;
-    i = i - 2*originalWidth;
+  } */
+
+  // simple version
+  for (int j = 0; j < h; j++){ // for each y
+    for (int i = 0; i < w; i++){
+      if(image[i*j]){
+        ST7735_DrawBitmap(x+i, y-j, &image[j*w + i], 1, 1);
+      }
+    }
   }
+
 }
 
 

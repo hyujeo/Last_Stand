@@ -19,7 +19,10 @@ class SpriteList {
 public:
     Sprite* head = 0;
 
-    // create new sprite at head
+    // allocate to the spritePool
+    static void Init(int size);
+
+    // take sprites from spritePool
     void push(int xPos, int yPos, int xVel, int yVel, int img);
 
     // if any element collided with player, return 1. else 0

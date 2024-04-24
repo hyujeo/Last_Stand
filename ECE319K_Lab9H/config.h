@@ -44,6 +44,27 @@
     #define USE_INTERNAL_RESISTOR 0
 #endif
 
+// list of image numbers, as indices in Image.h::images
+#define PLAYER_OFF_ID 0
+#define PLAYER_ON_ID  1
+#define STAR_SMALL_ID 2
+#define STAR_BIG_ID   3
+#define ALIEN_1_ID 4
+// #define 5
+// #define 6
+// #define 7
+#define PLAYER_LASER_ID 8
+#define ALIEN_LASER_ID  9
+// #define 10
+// #define 11 
+#define ALIEN_1_EXPLOSION_1_ID 12
+#define ALIEN_1_EXPLOSION_2_ID 13
+#define ALIEN_1_EXPLOSION_3_ID 14
+#define ALIEN_1_EXPLOSION_4_ID 15
+#define PLAYER_EXPLOSION_1_ID 16
+#define PLAYER_EXPLOSION_2_ID 17
+#define PLAYER_EXPLOSION_3_ID 18
+#define PLAYER_EXPLOSION_4_ID 19
 
 // increase friction to decrease max speed
 #define FRICTION 11
@@ -56,16 +77,9 @@
 // default = 0, increase to 
 #define HITBOX 0
 
-// list of image numbers, as indices in Image.h::images
-#define STAR_SMALL_ID       2
-#define STAR_BIG_ID         3
-#define ALIEN1_ID           4
-#define PLAYER_LASER_ID     8
-#define ALIEN_LASER_ID      9
-#define ALIEN_EXPLOSION1_ID 12
-
 // number of backgrounds, number of total objects = sprites + backgrounds
 #define MAX_BACKGROUND 100
-#define MAX_OBJECTS    250
+#define MAX_SPRITES    150
+#define MAX_OBJECTS    (MAX_BACKGROUND + MAX_SPRITES)
 
 #endif //LAST_STAND_CONFIG_H

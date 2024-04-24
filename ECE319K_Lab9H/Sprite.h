@@ -15,7 +15,7 @@ public:
     // 2^3vx = 1/32 pixels/interrupt
     // 2^11vx = 8 pixels/interrupt
     unsigned short img;
-    unsigned short counter = 0;
+    unsigned short counter;
     Sprite* next;
 
     Sprite(int xPos, int yPos, int xVel, int yVel, int _img) {

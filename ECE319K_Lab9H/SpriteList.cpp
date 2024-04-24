@@ -13,7 +13,10 @@
     // 2^3vx = 1/32 pixels/interrupt
     // 2^11vx = 8 pixels/interrupt
 
+static SpriteList spritePool;
+
 extern BackgroundList blackRectangles;
+
 short playerVX = 0;
 short playerVY = 0;
 int playerAX = 0;
@@ -23,7 +26,6 @@ int accelerationFactor = 0;
 void Update_Player_Speed(int joy_x, int joy_y, int factor) {
     // TODO
 }
-
 Image spriteImages[] = {
     {player_off, 19, 14}, // 0
     {player_on, 19, 14},
@@ -41,12 +43,32 @@ Image spriteImages[] = {
     {alien_1_explosion_2, 15, 15},
     {alien_1_explosion_3, 15, 15},
     {alien_1_explosion_4, 15, 15},
-    {ship_explosion_1, 19, 14}, // 16
-    {ship_explosion_2, 19, 14},
-    {ship_explosion_3, 19, 14},
-    {ship_explosion_4, 19, 14},
+    {player_explosion_1, 19, 14}, // 16
+    {player_explosion_2, 19, 14},
+    {player_explosion_3, 19, 14},
+    {player_explosion_4, 19, 14},
 };
+void SpriteList::Init(int size){
+    for (int i = 0; i < size; i++){
+        Sprite* s = new Sprite(0,0,0,0,0);
+        s->next = spritePool.head;
+        spritePool.head = s;
+    }
+}
+void SpriteList::push(int xPos, int yPos, int xVel, int yVel, int img) {
+    if (!spritePool.head) return;
 
+    Sprite* s = spritePool.head;
+    s->x = xPos << 8;
+    s->y = yPos << 8;
+    s->vx = xVel << 3;
+    s->vy = yVel << 3;
+    s->img = img;
+
+    spritePool.head = spritePool.head->next;
+    s->next = head;
+    head = s;
+}
 int SpriteList::collides(Sprite* s) { // to check for player collision, do: enemies.collides(&player)
     Sprite* enemy = head;
     Sprite* prev = 0;
@@ -60,8 +82,8 @@ int SpriteList::collides(Sprite* s) { // to check for player collision, do: enem
                 this->removeFromList(enemy, prev);
                 enemy = prev;
                 break;
-            case ALIEN1_ID:
-                enemy->img = ALIEN_EXPLOSION1_ID;
+            case ALIEN_1_ID:
+                enemy->img = ALIEN_1_EXPLOSION_1_ID;
                 break;
             }
             return 1;
@@ -94,18 +116,14 @@ void SpriteList::draw() {
     s = s->next;
   }
 }
-void SpriteList::push(int xPos, int yPos, int xVel, int yVel, int img) {
-    Sprite* sprite = new Sprite(xPos, yPos, xVel, yVel, img);
-    sprite->next = head;
-    head = sprite;
-}
 void SpriteList::removeFromList(Sprite* s, Sprite* prev) {
     if (prev){
         prev->next = s->next;
     } else {
         head = s->next;
     }
-    delete s;
+    s->next = spritePool.head;
+    spritePool.head = s;
 }
 void SpriteList::update() {
     Sprite* s = head;
