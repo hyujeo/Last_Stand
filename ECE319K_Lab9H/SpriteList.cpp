@@ -112,7 +112,7 @@ void SpriteList::draw() {
     short height = spriteImages[s->img].height;
     short xPix = (s->x >> 8) - 64;
     short yPix = (s->y >> 8) - 48;
-    ST7735_DrawBitmap(xPix - (width >> 1), yPix + (height >> 1), spriteImages[s->img].array, width, height);
+    ST7735_DrawSprite(xPix - (width >> 1), yPix + (height >> 1), spriteImages[s->img].array, width, height);
     s = s->next;
   }
 }

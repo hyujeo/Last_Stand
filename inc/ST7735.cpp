@@ -1022,18 +1022,16 @@ void ST7735_DrawSprite(int16_t x, int16_t y, const uint16_t *image, int16_t w, i
   if((x >= _width) || ((y - h + 1) >= _height) || ((x + w) <= 0) || (y < 0)){
     return;  // image is totally off the screen, do nothing
   }
-  // faster version, doesnt work yet 
-  /*
   for (int i = 0; i < h; i++){ // for each y
     int left = 0;
     while (left < w){
-      if (!image[left*i]){ // find a nonzero x
+      if (!image[i*w + left]){ // find a nonzero x
         left++;
         continue;
       };
       int right = left;
       while (right < w){ // find the end of the nonzero array
-        if (image[right*i]){
+        if (image[i*w + right]){
           right++;
           continue;
         }
@@ -1042,17 +1040,7 @@ void ST7735_DrawSprite(int16_t x, int16_t y, const uint16_t *image, int16_t w, i
       ST7735_DrawBitmap(x+left, y-i, &image[i*w + left], right-left, 1);
       left = right;
     }
-  } */
-
-  // simple version
-  for (int j = 0; j < h; j++){ // for each y
-    for (int i = 0; i < w; i++){
-      if(image[i*j]){
-        ST7735_DrawBitmap(x+i, y-j, &image[j*w + i], 1, 1);
-      }
-    }
   }
-
 }
 
 
