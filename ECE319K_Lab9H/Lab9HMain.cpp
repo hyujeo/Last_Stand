@@ -145,14 +145,22 @@ void TIMG12_IRQHandler(void){
         if(((seconds_elapsed%10) == 2) && !death_animation){ // create new alien every n seconds
             created = true;
             uint32_t rand_x = (aliens.random_seed%256);
-            if(rand_x > 70 && rand_x < 140){
-                rand_x = 200;
+            if(rand_x > 90 && rand_x < 140){
+                if(rand_x < 110){
+                    rand_x = 90;
+                }else{
+                    rand_x = 200;
+                }
             }
             uint32_t num = Random32();
             aliens.random_seed = Random(num);
             uint32_t rand_y = (aliens.random_seed%256);
             if(rand_y > 70 && rand_y < 140){
-                rand_y = 200;
+                if(rand_y < 90){
+                    rand_y = 70;
+                }else{
+                    rand_y = 200;
+                }
             }
             aliens.push(rand_x, rand_y, 1, 1, ALIEN_1_ID);
 
