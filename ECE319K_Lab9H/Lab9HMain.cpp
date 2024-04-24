@@ -76,6 +76,10 @@ int time_elapsed = 0;
 int seconds_elapsed = 0;
 bool created = false;
 bool death_animation = false;
+bool executed = false;
+bool multiply = false;
+int alien_count = 0;
+int max_alien_count = 1;
 
 // games  engine runs at 30Hz
 
@@ -111,6 +115,8 @@ void TIMG12_IRQHandler(void){
             score = 0;
             time_elapsed = 0;
             seconds_elapsed = 0;
+            alien_count = 0;
+            max_alien_count = 1;
         }
         if (joystick_y > 1000 && language == 1){
             Sound_Menu_Selection();
@@ -146,8 +152,9 @@ void TIMG12_IRQHandler(void){
             prev_down = true;
             playerLasers.push(PLAYER_X >> 8, PLAYER_Y >> 8, joystick_x, joystick_y, PLAYER_LASER_ID);
         }
-        if(((seconds_elapsed%10) == 2) && !death_animation){ // create new alien every n seconds
+        if(((seconds_elapsed%10) == 2) && !death_animation && (alien_count < max_alien_count)){ // create new alien every n seconds
             created = true;
+            multiply = true;
             uint32_t rand_x = (aliens.random_seed%256);
             if(rand_x > 90 && rand_x < 140){
                 if(rand_x < 110){
@@ -167,7 +174,12 @@ void TIMG12_IRQHandler(void){
                 }
             }
             aliens.push(rand_x, rand_y, 1, 1, ALIEN_1_ID);
-
+            alien_count++;
+        }
+        if((seconds_elapsed%10 == 3) && multiply){
+            alien_count = 0;
+            max_alien_count*=2;
+            multiply = false;
         }
 
         // TODO REMOVE UP BUTTON TO NAVIGATE TO SCORE
@@ -190,6 +202,8 @@ void TIMG12_IRQHandler(void){
                 score = 0;
                 time_elapsed = 0;
                 seconds_elapsed = 0;
+                alien_count = 0;
+                max_alien_count = 1;
             }
         }
         // joystick_y to select from score screen
