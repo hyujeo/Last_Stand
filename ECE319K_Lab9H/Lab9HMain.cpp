@@ -101,6 +101,7 @@ void TIMG12_IRQHandler(void){
     case 0:
         // any button on menu screen => game start
         if (all_switches && !prev_up && !prev_down && !prev_left && !prev_right){
+            Sound_Ufo_Highpitch_Menu();
             current_screen = 1;
         }
         if (joystick_y > 1000 && language == 1){
@@ -109,6 +110,7 @@ void TIMG12_IRQHandler(void){
             language = 0;
         }
         if (joystick_y < -1000 && language == 0){
+
             Sound_Menu_Selection();
             language = 1;
             refresh_menu = true;
@@ -122,7 +124,7 @@ void TIMG12_IRQHandler(void){
         if (down && !prev_down){
             Sound_Shoot();
             prev_down = true;
-            playerLasers.push(PLAYER_X >> 8, PLAYER_Y >> 8, joystick_x, joystick_y, PLAYER_LASER_ID);
+            //playerLasers.push(PLAYER_X >> 8, PLAYER_Y >> 8, joystick_x, joystick_y, PLAYER_LASER_ID);
         }
 
         // TODO REMOVE UP BUTTON TO NAVIGATE TO SCORE
@@ -210,7 +212,6 @@ void Game_Init() {
 }
 
 void Menu_Screen_Init() {
-    ST7735_FillScreen(ST7735_BLACK);
     ST7735_DrawString(1, 2, (Phrases[language][0]), ST7735_RED, ST7735_BLACK, 1); // title
     ST7735_DrawString(1, 6, (Phrases[language][2]), ST7735_GREEN, ST7735_BLACK, 1); // language header
     ST7735_DrawString(1, 12, (Phrases[language][1]), ST7735_WHITE, ST7735_BLACK, 1); // directions
@@ -227,14 +228,24 @@ void Menu_Screen_Init() {
 }
 
 void Menu_Screen_Update() {
-    ST7735_SetCursor(0,0);
-    printf("%05d\n", joystick_y);
-    return; // nothing for now
+    ST7735_FillRect(6, 20, 102, 8, ST7735_BLACK); // title
+    ST7735_FillRect(14, 78, 50, 32, ST7735_BLACK); // english spanish
+    Menu_Screen_Init();
 }
 
 void Play_Screen_Init() {
     ST7735_FillScreen(ST7735_BLACK);
+    ST7735_SetCursor(6,1);
+    printf("%s: %d", (Phrases[language][5]), score);
     player.draw();
+    // lives displayed at bottom
+    ST7735_DrawBitmap(68, 155, player_on, 19, 14);
+    ST7735_DrawBitmap(88, 155, player_on, 19, 14);
+    ST7735_DrawBitmap(108, 155, player_on, 19, 14);
+    // The location that powerups would be once they get picked up
+    ST7735_DrawBitmap(5, 155, powerup, 15, 15);
+    ST7735_DrawBitmap(25, 155, powerup, 15, 15);
+    ST7735_DrawBitmap(45, 155, powerup, 15, 15);
 }
 
 void Play_Screen_Update() {
@@ -246,7 +257,7 @@ void Play_Screen_Update() {
 }
 
 void Score_Screen_Init() {
-    ST7735_FillScreen(ST7735_BLACK);
+    ST7735_FillRect(34, 10, 60, 8, ST7735_BLACK); // remove old score header
     ST7735_DrawString(5, 2, (Phrases[language][4]), ST7735_RED, ST7735_BLACK, 1); // game over header
     ST7735_SetCursor(6,7);
     printf("%s: %d", (Phrases[language][5]), score);
@@ -263,7 +274,16 @@ void Score_Screen_Init() {
 }
 
 void Score_Screen_Update() {
-    return; // nothing for now
+    ST7735_FillRect(28, 98, 46, 32, ST7735_BLACK);
+    if(score_screen_selection == 0){
+        ST7735_FillRect(28, 98, 46, 12, ST7735_WHITE);
+        ST7735_DrawString(5, 10, (Phrases[language][6]), ST7735_BLACK, ST7735_WHITE, 1); // restart
+        ST7735_DrawString(5, 12, Menu_English, ST7735_WHITE, ST7735_BLACK, 1); // menu
+    }else{
+        ST7735_FillRect(28, 118, 32, 12, ST7735_WHITE);
+        ST7735_DrawString(5, 10, (Phrases[language][6]), ST7735_WHITE, ST7735_BLACK, 1); // restart
+        ST7735_DrawString(5, 12, Menu_English, ST7735_BLACK, ST7735_WHITE, 1); // menu
+    }
 }
 
 // ALL ST7735 OUTPUT MUST OCCUR IN MAIN
@@ -294,12 +314,14 @@ int main(void){ // final main
             //ST7735_FillScreen(ST7735_BLACK);
             // Menu screen
             case 0:
-                if (previous_screen != current_screen || refresh_menu){
+                if (previous_screen != current_screen){
                     previous_screen = current_screen;
-                    refresh_menu = false;
+                    ST7735_FillScreen(ST7735_BLACK);
                     Menu_Screen_Init();
+                }else if(refresh_menu){
+                    Menu_Screen_Update();
+                    refresh_menu = false;
                 }
-                Menu_Screen_Update();
                 break;
 
             // Play screen
@@ -313,12 +335,13 @@ int main(void){ // final main
 
             // Score screen
             case 2:
-                if (previous_screen != current_screen || refresh_score){
-                        previous_screen = current_screen;
-                        refresh_score = false;
-                        Score_Screen_Init();
-                    }
-                Score_Screen_Update();
+                if (previous_screen != current_screen){
+                    previous_screen = current_screen;
+                    Score_Screen_Init();
+                }else if(refresh_score){
+                    Score_Screen_Update();
+                    refresh_score = false;
+                }
                 break;
             }
 
