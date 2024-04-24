@@ -239,10 +239,12 @@ const char Score_English[]="Score";
 const char Score_Spanish[]="Puntos";
 const char Restart_English[]="Restart";
 const char Restart_Spanish[]="Otra";
+const char Time_English[]="Time";
+const char Time_Spanish[]="Tiempo";
 const char Menu_English[]="Menu"; // same in spanish lol
-const char *Phrases[2][7]={
-  {Title_English, Directions_English, Sel_Language_English, Language_English, GameOver_English, Score_English, Restart_English}, // row 1 English
-  {Title_Spanish, Directions_Spanish, Sel_Language_Spanish, Language_Spanish, GameOver_Spanish, Score_Spanish, Restart_Spanish}, // row 2 Spanish
+const char *Phrases[2][8]={
+  {Title_English, Directions_English, Sel_Language_English, Language_English, GameOver_English, Score_English, Restart_English, Time_English}, // row 1 English
+  {Title_Spanish, Directions_Spanish, Sel_Language_Spanish, Language_Spanish, GameOver_Spanish, Score_Spanish, Restart_Spanish, Time_Spanish}, // row 2 Spanish
 };
 
 void Game_Init() {
@@ -302,7 +304,7 @@ void Play_Screen_Update() {
     alienLasers.draw();
     playerLasers.draw();
     ST7735_SetCursor(0,0);
-    printf("Time: %d", seconds_elapsed);
+    printf("%s: %d", (Phrases[language][7]), seconds_elapsed);
     ST7735_SetCursor(6,1);
     printf("%s: %d", (Phrases[language][5]), score);
 
