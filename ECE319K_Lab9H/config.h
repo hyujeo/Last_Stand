@@ -79,7 +79,7 @@
 #define PLAYER_X 128 << 8
 #define PLAYER_Y 128 << 8
 
-// default = 0, increase to 
+// default = 0, increase to make hitbox larger
 #define HITBOX 0
 
 // number of backgrounds, number of total objects = sprites + backgrounds

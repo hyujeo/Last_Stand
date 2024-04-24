@@ -67,17 +67,19 @@ void SpriteList::push(int xPos, int yPos, int xVel, int yVel, int img) {
     s->next = head;
     head = s;
 }
-int SpriteList::collides(Sprite* s) { // to check for player collision, do: enemies.collides(&player)
+int SpriteList::collides(Sprite* s) { // to check for player collision, do: enemies.collides(player.head)
     Sprite* enemy = head;
-    Sprite* prev = 0;
+    Sprite temp = {0,0,0,0,0};
+    Sprite* prev = &temp;
+    prev->next = enemy;
     while(enemy){
         int dx = s->x - enemy->x;
         int dy = s->y - enemy->y;
         int r = spriteImages[s->img].width + spriteImages[enemy->img].width;
         if (dx*dx + dy*dy < r*(r + HITBOX)){ // collided
             switch (enemy->img){
-            case ALIEN_LASER_ID:
-                this->removeFromList(enemy, prev);
+            case ALIEN_LASER_ID: case PLAYER_LASER_ID:
+                removeFromList(enemy, prev);
                 enemy = prev;
                 break;
             case ALIEN_1_ID:
@@ -92,11 +94,20 @@ int SpriteList::collides(Sprite* s) { // to check for player collision, do: enem
 }
 int SpriteList::detectCollisions(SpriteList& enemies) {
     Sprite*s = head;
-    Sprite* prev = 0;
+    Sprite temp = {0,0,0,0,0};
+    Sprite* prev = &temp;
+    prev->next = s;
     while(s){
-        int c = enemies.collides(s);
-        if (c){
-            removeFromList(s, prev);
+        if (enemies.collides(s)){
+            switch (s->img){
+            case ALIEN_LASER_ID: case PLAYER_LASER_ID:
+                removeFromList(s, prev);
+                s = prev;
+                break;
+            case ALIEN_1_ID:
+                s->img = ALIEN_1_EXPLOSION_1_ID;
+                break;
+            }
             return 1;
         }
         s = s->next;
@@ -126,12 +137,25 @@ void SpriteList::update() {
     Sprite temp = {0,0,0,0,0};
     Sprite* prev = &temp;
     prev->next = s;
-    int xpos, ypos;
     while(s){
         blackRectangles.push(s->x, s->y, s->img);
         s->x += s->vx + backVX;
         s->y += s->vy + backVY;
+        int xpos = s->x >> 8;
+        int ypos = s->y >> 8;
         switch (s->img){
+        case ALIEN_1_ID:
+            if (xpos > PLAYER_X){
+                s->vx = -20;
+            } else {
+                s->vx = 20;
+            }
+            if (ypos > PLAYER_Y){
+                s->vy = -20;
+            }
+            else {
+                s->vy = 20;
+            }
         // Lasers: remove when going out of bounds, instead of wrapping around
         case PLAYER_LASER_ID: case ALIEN_LASER_ID:
             // player screen's boundary is 64<x<192, 48<y<208
@@ -146,6 +170,17 @@ void SpriteList::update() {
         } 
         // all sprites must change speed based on player speed
         prev = s;
+        s = s->next;
+    }
+}
+void SpriteList::clear(){
+    Sprite* s = head;
+    Sprite temp = {0,0,0,0,0};
+    Sprite* prev = &temp;
+    prev->next = s;
+    while(s){
+        removeFromList(s, prev);
+        s = prev;
         s = s->next;
     }
 }

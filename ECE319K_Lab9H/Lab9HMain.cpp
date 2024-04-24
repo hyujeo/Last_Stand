@@ -74,12 +74,30 @@ int current_screen = 0; // 0: start, 1: play; 2: score
 int previous_screen = -1;
 int time_elapsed = 0;
 int seconds_elapsed = 0;
-bool created = false;
 bool death_animation = false;
 bool executed = false;
 bool multiply = false;
 int alien_count = 0;
 int max_alien_count = 1;
+
+void Game_Init() {
+    SpriteList::Init(MAX_SPRITES);
+    player.push(PLAYER_X >> 8, PLAYER_Y >> 8, 0, 0, 0); // initialize player
+    backgrounds.init(MAX_BACKGROUND);
+    blackRectangles.init(MAX_OBJECTS);
+    for (int i = 0; i < MAX_BACKGROUND; i++){
+        int img;
+        if (Random(10)) img = STAR_SMALL_ID;
+        else img = STAR_BIG_ID;
+        backgrounds.push(Random(256) << 8, Random(256) << 8, img);
+    }
+}
+
+void Game_Reset() {
+    aliens.clear();
+    alienLasers.clear();
+    playerLasers.clear();
+}
 
 // games  engine runs at 30Hz
 
@@ -135,25 +153,28 @@ void TIMG12_IRQHandler(void){
 
     // Play screen
     case 1:
+        time_elapsed++;
 
         if (joystick_x > 1000 || joystick_y > 1000 || joystick_x < -1000 || joystick_y < -1000){
             player.head->img = PLAYER_ON_ID;
         } else {
             player.head->img = PLAYER_OFF_ID;
-  /*
-        time_elapsed++;
-        if((time_elapsed%3) != 0 && created && !death_animation){
-            aliens.update(&blackRectangles);
-            if(aliens.detectCollisions(player)){
+        }
+        // Collision Detection
+        if (aliens.collides(player.head) || alienLasers.collides(player.head)){
+            if (!death_animation){
                 Sound_Explosion();
                 shield--;
                 death_animation = true;
             }
         }
+        if (aliens.detectCollisions(playerLasers)){
+            score++;
+        }
+        
         if(time_elapsed >= 30){
             seconds_elapsed++;
             time_elapsed = 0;
- */
         }
         Update_Player_Speed(joystick_x, joystick_y, slidepot);
         // down button is shoot
@@ -164,10 +185,8 @@ void TIMG12_IRQHandler(void){
             extern int backVX;
             extern int backVY;
             playerLasers.push(PLAYER_X>>8, PLAYER_Y>>8, -backVX*PLAYER_LASER_SPEED, -backVY*PLAYER_LASER_SPEED, PLAYER_LASER_ID);
-// HERE ON MAIN
         }
         if(((seconds_elapsed%10) == 2) && !death_animation && (alien_count < max_alien_count)){ // create new alien every n seconds
-            created = true;
             multiply = true;
             uint32_t rand_x = (aliens.random_seed%256);
             if(rand_x > 90 && rand_x < 140){
@@ -200,7 +219,6 @@ void TIMG12_IRQHandler(void){
 
             multiply = false;
         }
-// MAIN DONE
         // TODO REMOVE UP BUTTON TO NAVIGATE TO SCORE
         if (up && !prev_up){
             current_screen = 2;
@@ -213,6 +231,7 @@ void TIMG12_IRQHandler(void){
         // go back to menu (selection=1) or replay (selection=0)
         if (all_switches && !prev_up && !prev_down && !prev_left && !prev_right){
             Sound_Ufo_Highpitch_Menu();
+            Game_Reset();
             if (score_screen_selection == 1){
                 current_screen = 0;
             } else {
@@ -246,6 +265,7 @@ void TIMG12_IRQHandler(void){
     alienLasers.update();
     aliens.update();
 
+    
 
     // 5) set semaphore and update 'prev' values
     prev_up    = up;
@@ -283,19 +303,6 @@ const char *Phrases[2][8]={
   {Title_English, Directions_English, Sel_Language_English, Language_English, GameOver_English, Score_English, Restart_English, Time_English}, // row 1 English
   {Title_Spanish, Directions_Spanish, Sel_Language_Spanish, Language_Spanish, GameOver_Spanish, Score_Spanish, Restart_Spanish, Time_Spanish}, // row 2 Spanish
 };
-
-void Game_Init() {
-    SpriteList::Init(MAX_SPRITES);
-    player.push(PLAYER_X >> 8, PLAYER_Y >> 8, 0, 0, 0); // initialize player
-    backgrounds.init(MAX_BACKGROUND);
-    blackRectangles.init(MAX_OBJECTS);
-    for (int i = 0; i < MAX_BACKGROUND; i++){
-        int img;
-        if (Random(10)) img = STAR_SMALL_ID;
-        else img = STAR_BIG_ID;
-        backgrounds.push(Random(256) << 8, Random(256) << 8, img);
-    }
-}
 
 void Menu_Screen_Init() {
     ST7735_DrawString(1, 2, (Phrases[language][0]), ST7735_RED, ST7735_BLACK, 1); // title
@@ -347,9 +354,6 @@ void Play_Screen_Update() {
     ST7735_SetCursor(6,1);
     printf("%s: %d", (Phrases[language][5]), score);
 
-    if(death_animation){
-        int why = 0;
-    }
     if(shield <= 2){
         ST7735_DrawBitmap(68, 155, player_explosion_4, 19, 14);
     }else{
@@ -419,11 +423,8 @@ int main(void){ // final main
     while(1){
         // check for end game or level switch
         if(refresh){
-            //ST7735_FillScreen(ST7735_BLACK);
             refresh = false;
-            //ST7735_FillScreen(ST7735_BLACK);
             switch (current_screen){
-            //ST7735_FillScreen(ST7735_BLACK);
             // Menu screen
             case 0:
                 if (previous_screen != current_screen){

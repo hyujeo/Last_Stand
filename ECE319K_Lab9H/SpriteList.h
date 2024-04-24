@@ -38,12 +38,6 @@ public:
     // take sprites from spritePool
     void push(int xPos, int yPos, int xVel, int yVel, int img);
 
-    // if any element collided with player, return 1. else 0
-    // when collision happens:
-    //    remove laser
-    //    change alien to exploded image
-    int playerCollision(Sprite player);
-
     // return 1 if collides, 0 otherwise
     int collides(Sprite* enemy);
 
@@ -51,6 +45,7 @@ public:
     // elements of both may be altered/removed:
     //    remove laser
     //    change alien to exploded image
+    // called by alien
     int detectCollisions(SpriteList& enemies);
 
     // update sprite positions according to sprite speed
@@ -58,9 +53,13 @@ public:
     // change sprite speed according to sprite movement logic and player speed
     // incrememt counter if exploded image
     // remove sprite if counter > explosion duration
-    void update(BackgroundList* garbageCollector);
+    void update();
 
+    // draw all sprites
     void draw();
+
+    // return all sprites to spritePool
+    void clear();
 
 private:
 
