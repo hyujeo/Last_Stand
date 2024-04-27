@@ -30,7 +30,7 @@ public:
 class SpriteList {
 public:
     Sprite* head = 0;
-    uint32_t random_seed = 0;
+    int count = 0;
 
     // allocate to the spritePool
     static void Init(int size);

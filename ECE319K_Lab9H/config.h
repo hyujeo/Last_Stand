@@ -43,8 +43,9 @@
 
     #define USE_INTERNAL_RESISTOR 0
 #endif
-
-// list of image numbers, as indices in Image.h::images
+/*
+Image ID, as indices in Image.h::images
+*/
 #define PLAYER_OFF_ID 0
 #define PLAYER_ON_ID  1
 #define STAR_SMALL_ID 2
@@ -66,25 +67,40 @@
 #define PLAYER_EXPLOSION_3_ID 18
 #define PLAYER_EXPLOSION_4_ID 19
 
+/*
+System constants
+*/
+#define MAX_BACKGROUND 100
+#define MAX_SPRITES    150
+#define MAX_OBJECTS    (MAX_BACKGROUND + MAX_SPRITES)
+
+/*
+Movement and layout constants
+*/
 // player friction
 #define FRICTION 0.05
 // ratio of playerspeed : backgroundspeed
 #define BACKGROUND_RELATIVE_SPEED 4
-//speeds
-#define PLAYER_LASER_SPEED 0.5
-#define ALIEN_LASER_SPEED 0.5
-
 // player coordinates in 256x256, with << 8 to fit Sprite standards
 // adjust player location on screen
-#define PLAYER_X 128 << 8
-#define PLAYER_Y 128 << 8
+#define PLAYER_X (128 << 8)
+#define PLAYER_Y (128 << 8)
 
 // default = 0, increase to make hitbox larger
 #define HITBOX 0
 
-// number of backgrounds, number of total objects = sprites + backgrounds
-#define MAX_BACKGROUND 100
-#define MAX_SPRITES    150
-#define MAX_OBJECTS    (MAX_BACKGROUND + MAX_SPRITES)
+/*
+Game difficulty constants
+*/
+// measured in interrupts
+#define BASE_SPAWN_TIME 60
+#define MIN_SPAWN_TIME 30
+// max lives
+#define BASE_SHIELD_COUNT 5
+// measured in interrupts
+#define PLAYER_LASER_COOLDOWN 20
+#define ALIEN_LASER_COOLDOWN 80
+#define PLAYER_LASER_SPEED (1<<8)
+#define ALIEN_LASER_SPEED (1<<7)
 
 #endif //LAST_STAND_CONFIG_H

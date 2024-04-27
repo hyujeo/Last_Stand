@@ -11,8 +11,8 @@
 #include "../inc/Timer.h"
 
 // arrays for capability to add sound waves
-const uint8_t* pointer_to_sound[4] = {shoot+4080, explosion+8731, ufo_highpitch_menu+1802, metal_crunch+3525}; // array of sound wave pointers pointing to last element+1
-int32_t sound_positions[4] = {0, 0, 0, 0}; // finished when at position 0
+const uint8_t* pointer_to_sound[6] = {shoot+4080, explosion+8731, ufo_highpitch_menu+1802, metal_crunch+3525, no_ammo+1716, no_ammo_2+3308}; // array of sound wave pointers pointing to last element+1
+int32_t sound_positions[6] = {0, 0, 0, 0, 0, 0}; // finished when at position 0
 
 int8_t non_zero_values; // avoids having to iterate
 
@@ -46,7 +46,7 @@ void SysTick_Handler(void){ // called at 11 kHz
     // output one value to DAC if a sound is active
    if(non_zero_values > 0){
        uint32_t output = 0;
-       for(int i = 0; i < 4;i++){
+       for(int i = 0; i < 6;i++){
            if(sound_positions[i] != 0){
                output+=(pointer_to_sound[i][-1*sound_positions[i]])/non_zero_values; // gather sum of active sound waves
                sound_positions[i]-=1;
@@ -103,8 +103,10 @@ void Sound_Explosion(void){
 void Sound_Ufo_Highpitch_Menu(void){
     Sound_Start(2, 1802);
 }
-
 void Sound_Menu_Selection(void){
     Sound_Start(3, 3525);
 }
-
+void Sound_No_Ammo(void){
+    //Sound_Start(4, 1716);
+    Sound_Start(5, 3308);
+}

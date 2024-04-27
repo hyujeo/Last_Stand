@@ -32,5 +32,5 @@ void Sound_Shoot(void);
 void Sound_Explosion(void);
 void Sound_Ufo_Highpitch_Menu(void);
 void Sound_Menu_Selection(void);
-
+void Sound_No_Ammo(void);
 #endif
